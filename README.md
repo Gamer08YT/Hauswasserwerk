@@ -11,6 +11,7 @@ Die Konfigurationen werden jeweils auf den Geräten Lokal gespeichert, eine Steu
 bereitgestellt.
 
 ## Todos:
+
 - Telnet Server
 - Automatische Befüllung des Pufferspeichers.
 - Automatische Befüllung nach Vorrang.
@@ -18,3 +19,22 @@ bereitgestellt.
 - Fehlermeldung (Anhand Leistungsaufnahme)
 - Füllstandüberwachung (Ultraschall)
 - Wassermelder
+- PUSH Benachrichtigungen
+
+## Struktur:
+
+```mermaid
+graph TD
+    Master(Master) --> Netzwerk
+    Netzwerk --> Shelly1(Shelly)
+    Netzwerk --> Shelly2(Shelly)
+    Shelly1 --> Pumpe1(Tauchpumpe)
+    Shelly2 --> Pumpe2(Tauchpumpe)
+    Master --> Aktoren
+    Aktoren --> Pumpe3(Druckspeicherpumpe)
+    Aktoren --> Lampe1(Fehler LED)
+    Aktoren --> Lampe2(Status LED)
+    Master --> Sensoren
+    Sensoren --> Pegelschalter
+    Sensoren --> Wassermelder
+```
