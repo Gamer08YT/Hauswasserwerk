@@ -8,7 +8,7 @@
 
 #include "ESPTelnetBase.h"
 #include "ESPTelnet.h"
-#include "commands/Command.h"
+#include "../commands/Command.h"
 #include "EscapeCodes.h"
 #include "HAMqtt.h"
 #include "IotWebConf.h"
