@@ -4,14 +4,13 @@
 
 #include <HTTPClient.h>
 #include "Slave.h"
-#include <ArduinoJson.h>
+#include "ArduinoJson.h"
 #include "PINOUT.h"
-
-
-WiFiClient client;
+#include "Network.h"
 
 // Store Task Handle for Multithreading Error.
-TaskHandle_t errorIO;
+TaskHandle_t error_task;
+
 
 /**
  * @file
@@ -53,19 +52,22 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
-    http.begin(client, getURL(idIO, urlIO, 0));
+    http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
-    http.GET();
-
-    // End HTTP Request.
-    http.end();
+    if (http.GET() != 200) {
+        // Print Response.
+        Serial.println(http.getString());
+    }
 
     // Create new Document.
-    DynamicJsonDocument document(2048);
+    DynamicJsonDocument document(1024);
 
     // Deserialize JSON Content.
     deserializeJson(document, http.getStream());
+
+    // End HTTP Request.
+    http.end();
 
     return document;
 }
@@ -78,23 +80,26 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
  * @param dataIO The data to send in the POST request.
  */
 
-BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, char *dataIO) {
+BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, String dataIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
-    http.begin(client, getURL(idIO, urlIO, 1));
+    http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
-    http.POST(String(dataIO));
-
-    // End HTTP Request.
-    http.end();
+    if (http.POST(dataIO) != 200) {
+        // Print Response.
+        Serial.println(http.getString());
+    }
 
     // Create new Document.
-    DynamicJsonDocument document(2048);
+    DynamicJsonDocument document(1024);
 
     // Deserialize JSON Content.
     deserializeJson(document, http.getStream());
+
+    // End HTTP Request.
+    http.end();
 
     return document;
 }
@@ -116,20 +121,12 @@ BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, char 
  * \note The caller must ensure that the `urlIO` buffer is large enough to hold the URL string. Otherwise, a buffer overflow may occur.
  */
 
-String Slave::getURL(int idIO, char *urlIO, int typeIO) {
+String Slave::getURL(int idIO, char *urlIO) {
     String string;
 
     string += "http://";
     string += devices[idIO];
-    string += "/rpc/HTTP.";
-
-    if (typeIO == 0)
-        string += "GET";
-    else if (typeIO == 1)
-        string += "POST";
-
-    string += "?url=";
-    string += "http://10.33.53.21/rpc/";
+    string += "/rpc/";
     string += urlIO;
 
     // Print Debug Message.
@@ -189,9 +186,9 @@ void Slave::setup() {
 void Slave::setError(bool stateIO, String codeIO, int flashIO) {
     // Create new Task for Displaying Error Blinker.
     if (stateIO)
-        xTaskCreate(runError, "error", 10000, NULL, 100, &errorIO);
+        xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
     else
-        vTaskDelete(errorIO);
+        vTaskDelete(error_task);
 }
 
 /**
@@ -207,6 +204,39 @@ void Slave::runError(void *parameter) {
     delay(500);
     digitalWrite(ERROR_LAMP, HIGH);
     delay(500);
+}
+
+/**
+ * @brief Get the slave with the specified IO ID.
+ *
+ * This function retrieves the slave object from the Slave class based on the given IO ID. It searches the internal
+ * collection of slave objects and returns the matching slave object if found. If no matching slave object is found, it
+ * returns an empty optional object.
+ *
+ * @param idIO The IO ID of the slave object to retrieve.
+ * @return std::optional<Slave> The slave object with the specified IO ID, if found.
+ *
+ * @note This function assumes that the slave objects are stored in the internal collection of the Slave class.
+ * @note The IO ID is a unique identifier associated with each slave object.
+ * @note If no matching slave object is found, this function returns an empty optional object.
+ *
+ * @see Slave
+ */
+BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
+    return sendGet(idIO, "Switch.GetStatus?id=0");
+}
+
+/**
+ * @brief Retrieves the current power value of a specified IO device.
+ *
+ * This function retrieves the current power value of the IO device identified by the provided ID.
+ *
+ * @param idIO The ID of the IO device.
+ * @return The current power value of the specified IO device.
+ */
+
+float Slave::getPower(int idIO) {
+    return getSlave(idIO)["apower"].as<float>();
 }
 
 

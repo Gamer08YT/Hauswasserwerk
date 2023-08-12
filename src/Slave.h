@@ -6,14 +6,17 @@
 #define HAUSWASSERWERK_SLAVE_H
 
 
-#include "ArduinoJson/Document/BasicJsonDocument.hpp"
-#include "ArduinoJson/Document/DynamicJsonDocument.hpp"
+#include "ArduinoJson.h"
 
 class Slave {
 public:
     static void setup();
 
     static void setSlave(int idIO, bool stateIO);
+
+    static BasicJsonDocument<DefaultAllocator> getSlave(int idIO);
+
+    static float getPower(int idIO);
 
     static void setError(bool stateIO, String codeIO = "Unknown Error", int flashIO = 500);
 
@@ -23,11 +26,11 @@ public:
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 
-    static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendPost(int idIO, char *urlIO, char *dataIO);
+    static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendPost(int idIO, char *urlIO, String dataIO);
 
-    static String getURL(int idIO, char *urlIO, int typeIO = 0);
+    static String getURL(int idIO, char *urlIO);
 
-    static void runError(void * parameter);
+    static void runError(void *parameter);
 };
 
 

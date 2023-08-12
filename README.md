@@ -38,3 +38,20 @@ graph TD
     Sensoren --> Pegelschalter
     Sensoren --> Wassermelder
 ```
+
+## Abläufe:
+
+### Druckspeicher:
+
+1. Pumpe einschalten
+2. Pumpe auf Leistungsaufnahme überwachen
+3. Pumpe nach max. X (30) Sekunden abschalten und Fehlermeldung **(Eventuelle Leckage)** auslösen.
+4. Pumpe abschalten.
+
+### Tauchpumpen:
+
+1. Pumpe auf Leistungsaufnahme überwachen.
+    - Wenn Leistungsaufnahme verfügbar trotz ausschaltbefehl Fehlermeldung **(Relais klebt)**...
+    - Wenn Leitungsaufnahme zu gering, Fehlermeldung auslösen **(Trockenlaufschutz ausgelöst)**
+2. Pumpe einschalten
+3. Pumpe abschalten

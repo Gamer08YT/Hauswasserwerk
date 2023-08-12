@@ -9,7 +9,7 @@
 #include <ETH.h>
 #include "SPI.h"
 #include "Watcher.h"
-#include "Slave.h"
+#include "Network.h"
 
 //#include "ArduinoOTA.h"
 //#include "InternalStorage.h"
@@ -22,19 +22,10 @@ byte macIO[] = {
 // Store WebServer Instance.
 AsyncWebServer server(80);
 
-// Store Ethernet Client Instance.
-WiFiClient client;
-
-#define ETH_ADDR        1
-#define ETH_POWER_PIN   16//-1 //16 // Do not use it, it can cause conflict during the software reset.
-#define ETH_POWER_PIN_ALTERNATIVE 16 //17
-#define ETH_MDC_PIN    23
-#define ETH_MDIO_PIN   18
-#define ETH_TYPE       ETH_PHY_LAN8720
-#define ETH_CLK_MODE    ETH_CLOCK_GPIO17_OUT // ETH_CLOCK_GPIO0_IN
-
 // Define Home Assistant Credentials.
 HADevice device;
+
+WiFiClient client;
 
 // Define Home Assistant MQTT Instance.
 HAMqtt mqtt(client, device, 24);
@@ -106,7 +97,7 @@ void setup() {
     Serial.println("Starting Hauswasserwerk...");
 
     // Setup LAN Connection.
-    setupLAN();
+    Network::setupLAN();
 
     // Setup Arduino OTA.
     setupOTA();
@@ -128,7 +119,7 @@ void setup() {
 
     // Setup Pins.
     Watcher::setup();
-    Slave::setup();
+    //Slave::setup();
 }
 
 void setupHTTP() {
@@ -254,6 +245,7 @@ void setupHA() {
     minIO.setName("Minimal");
     minIO.setUnitOfMeasurement("%");
     minIO.setMode(HANumber::ModeBox);
+    minIO.setRetain(true);
 
     // Prepare Normal Trigger.
     // Define normal Level to refill (when it's Rain and Cistern is getting to full Tank is getting filled to Max Value).
@@ -262,14 +254,16 @@ void setupHA() {
     normalIO.setName("Normal");
     normalIO.setUnitOfMeasurement("%");
     normalIO.setMode(HANumber::ModeBox);
+    normalIO.setRetain(true);
 
     // Prepare Max Trigger.
     // Max Value for example in Emergency Situation.
     maxIO.setMax(100);
     maxIO.setMin(10);
-    maxIO.setName("Minimal");
+    maxIO.setName("Maximal");
     maxIO.setUnitOfMeasurement("%");
     maxIO.setMode(HANumber::ModeBox);
+    maxIO.setRetain(true);
 
     // Prepare Pump 1
     pump1.setName("Brunnen");
@@ -292,6 +286,7 @@ void setupHA() {
     mix1.setMin(10);
     mix1.setMode(HANumber::ModeBox);
     mix1.setUnitOfMeasurement("%");
+    mix1.setRetain(true);
 
     // Prepare Mix 2
     mix2.setName("Misch. Zisterne");
@@ -299,6 +294,7 @@ void setupHA() {
     mix2.setMax(10);
     mix2.setMode(HANumber::ModeBox);
     mix2.setUnitOfMeasurement("%");
+    mix2.setRetain(true);
 
     // Prepare Smart Mode
     smart.setIcon("mdi:eye-check");
@@ -309,6 +305,12 @@ void setupHA() {
     // Prepare Buffer Tank.
     buffer.setName("Füllstand Puffer");
     buffer.setIcon("mdi:duck");
+
+    // Prepare Power.
+    power.setName("Druckspeicher Power");
+    power.setUnitOfMeasurement("W");
+    power.setDeviceClass("power");
+    power.setIcon("mdi:lightbulb");
 
     // Prepare Error Message
     errorIO.setName("Störungsmeldung");
@@ -341,35 +343,6 @@ void setupHA() {
 void setupOTA() {
     // Begin OTA Server with Internal Storage.
     AsyncElegantOTA.begin(&server/*, "ByteWasserwerk", "ByteWasserwerk"*/);
-}
-
-/**
- * \brief Sets up the local area network (LAN) configuration.
- *
- * This function initializes the necessary variables and settings for
- * configuring and establishing a local area network (LAN).
- *
- * \note This function assumes that the necessary hardware and software
- * requirements for LAN setup are already in place.
- *
- * \note The specific implementation of this function may vary depending
- * on the platform and network architecture being used.
- *
- * \return No return value.
- */
-void setupLAN() {
-    // Begin ETH.
-    ETH.begin(ETH_ADDR, ETH_POWER_PIN, ETH_MDC_PIN, ETH_MDIO_PIN, ETH_TYPE, ETH_CLK_MODE); // Enable ETH
-
-    // Set Hostname of Client.
-    ETH.setHostname("Wasserwerk");
-
-    // Wait for Ethernet Connection...
-    while (!((uint32_t) ETH.localIP())) {};
-
-    // Print Success Message.
-    Serial.print("Successfully connected with Network IP-Address ");
-    Serial.println(ETH.localIP());
 }
 
 /**

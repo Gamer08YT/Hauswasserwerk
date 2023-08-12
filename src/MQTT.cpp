@@ -11,7 +11,9 @@ static void *onTrigger(HANumeric numericIO, HANumber *numberIO) {
 
 
 void MQTT::onSmart(bool state, HASwitch *sender) {
-    Slave::setSlave(0, state);
+    Serial.println("SMART VALUE CHANGED");
+    Serial.println(Slave::getPower(0));
+    //Slave::setSlave(0, state);
 
-    sender->setState(state);
+    //sender->setState(state);
 }
