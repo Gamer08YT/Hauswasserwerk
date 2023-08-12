@@ -1,0 +1,12 @@
+//
+// Created by Jan Heil on 12.08.2023.
+//
+
+#ifndef HAUSWASSERWERK_PINOUT_H
+#define HAUSWASSERWERK_PINOUT_H
+
+#define ERROR_LAMP 01
+#define PUMP_3 03
+#define LEVEL_SWITCH 05
+
+#endif //HAUSWASSERWERK_PINOUT_H

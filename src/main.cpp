@@ -8,6 +8,8 @@
 #include <AsyncElegantOTA.h>
 #include <ETH.h>
 #include "SPI.h"
+#include "Watcher.h"
+#include "Slave.h"
 
 //#include "ArduinoOTA.h"
 //#include "InternalStorage.h"
@@ -123,6 +125,10 @@ void setup() {
 
     // Setup MQTT.
     setupMQTT();
+
+    // Setup Pins.
+    Watcher::setup();
+    Slave::setup();
 }
 
 void setupHTTP() {
@@ -298,11 +304,9 @@ void setupHA() {
     smart.setIcon("mdi:eye-check");
     smart.setName("Smart Modus");
     smart.setRetain(true);
-    smart.onCommand(MQTT.onSmart);
+    smart.onCommand(MQTT::onSmart);
 
     // Prepare Buffer Tank.
-    buffer.setMax(100);
-    buffer.setMin(0);
     buffer.setName("Füllstand Puffer");
     buffer.setIcon("mdi:duck");
 

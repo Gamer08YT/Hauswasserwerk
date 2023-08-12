@@ -5,9 +5,13 @@
 #include <HTTPClient.h>
 #include "Slave.h"
 #include <ArduinoJson.h>
+#include "PINOUT.h"
 
 
 WiFiClient client;
+
+// Store Task Handle for Multithreading Error.
+TaskHandle_t errorIO;
 
 /**
  * @file
@@ -16,6 +20,7 @@ WiFiClient client;
 char *devices[]{
         "192.168.1.240"
 };
+
 
 /**
  * \brief Set the slave ID and state.
@@ -44,7 +49,7 @@ void Slave::setSlave(int idIO, bool stateIO) {
  * @param urlIO The URL to send the GET request to.
  */
 
-int Slave::sendGet(int idIO, char *urlIO) {
+BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
@@ -61,24 +66,26 @@ int Slave::sendGet(int idIO, char *urlIO) {
 
     // Deserialize JSON Content.
     deserializeJson(document, http.getStream());
+
+    return document;
 }
 
 /**
- * @brief Sends a POST request to a given URL with provided data.
+ * @brief Sends a POST request to a specified URL with the given data.
  *
- * @param idIO The ID of the post request.
- * @param urlIO The URL to send the post request to.
- * @param dataIO A character representing the data to be sent.
+ * @param idIO The ID of the IO object.
+ * @param urlIO The URL to send the POST request to.
+ * @param dataIO The data to send in the POST request.
  */
 
-BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, char dataIO) {
+BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, char *dataIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
     http.begin(client, getURL(idIO, urlIO, 1));
 
     // Begin POST Request.
-    http.POST(dataIO);
+    http.POST(String(dataIO));
 
     // End HTTP Request.
     http.end();
@@ -131,4 +138,77 @@ String Slave::getURL(int idIO, char *urlIO, int typeIO) {
 
     return string;
 }
+
+void Slave::setPump(bool stateIO) {
+    if (!stateIO) {
+        digitalWrite(PUMP_3, HIGH);
+    } else {
+        digitalWrite(PUMP_3, LOW);
+    }
+}
+
+/**
+ * @brief Sets up the configuration for the Slave object.
+ *
+ * This function is responsible for setting up the necessary variables and initializing any required resources for the Slave object.
+ * Call this function before using any other methods of the Slave class.
+ *
+ * @return void
+ */
+
+void Slave::setup() {
+    pinMode(PUMP_3, OUTPUT);
+    pinMode(ERROR_LAMP, OUTPUT);
+
+    digitalWrite(PUMP_3, HIGH);
+    digitalWrite(ERROR_LAMP, HIGH);
+}
+
+/**
+ * \brief Sets the error state and code for the Slave object.
+ *
+ * This function allows to set the error state and code for the Slave object.
+ *
+ * \param stateIO The error state to be set. Set to true if an error occurred, false otherwise.
+ * \param codeIO The error code associated with the error state. It should be a String indicating the specific error.
+ * \param flashIO The Flash memory value to indicate if the error should be persisted in Flash memory or not.
+ *
+ * \note Setting the error state and code can help in identifying the cause of an error and handle it appropriately.
+ *       The error state can be used to trigger error handling mechanisms in the Slave object.
+ *
+ * \note The error code can be any String describing the specific error in detail.
+ *
+ * \note When flashIO is set to a non-zero value, the error state and code will be persisted in Flash memory. This means
+ *       that the error state and code will remain even after the power is cycled.
+ *       When flashIO is set to zero, the error state and code will not be persisted, and they will be cleared upon power cycle.
+ *
+ * \warning Make sure to handle errors appropriately when they occur and check the error state as needed.
+ *          Use clearError() to clear the error state and code manually when necessary.
+ */
+
+void Slave::setError(bool stateIO, String codeIO, int flashIO) {
+    // Create new Task for Displaying Error Blinker.
+    if (stateIO)
+        xTaskCreate(runError, "error", 10000, NULL, 100, &errorIO);
+    else
+        vTaskDelete(errorIO);
+}
+
+/**
+ * @brief Description: This function is responsible for handling run-time errors encountered during the execution of Slave class.
+ *
+ * @param parameter A pointer to the data parameter that caused the error.
+ *
+ * @return None
+ */
+
+void Slave::runError(void *parameter) {
+    digitalWrite(ERROR_LAMP, LOW);
+    delay(500);
+    digitalWrite(ERROR_LAMP, HIGH);
+    delay(500);
+}
+
+
+
 
