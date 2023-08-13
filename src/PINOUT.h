@@ -5,8 +5,8 @@
 #ifndef HAUSWASSERWERK_PINOUT_H
 #define HAUSWASSERWERK_PINOUT_H
 
-#define ERROR_LAMP 14
-#define PUMP_3 15
+#define ERROR_LAMP 15
+#define PUMP_3 14
 #define LEVEL_SWITCH 12
 #define LEVEL_ECHO 2
 #define LEVEL_TRIGGER 4

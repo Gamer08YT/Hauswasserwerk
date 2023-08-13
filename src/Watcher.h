@@ -11,6 +11,7 @@ public:
     static void setup();
     static bool getLevelSwitch();
     static float getLevelDistance();
+    static float getPower();
     static void loop();
 };
 

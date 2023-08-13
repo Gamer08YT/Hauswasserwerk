@@ -10,6 +10,9 @@
 #include "SPI.h"
 #include "Watcher.h"
 #include "Network.h"
+#include "Device.h"
+#include "Slave.h"
+#include "SimpleTimer.h"
 
 //#include "ArduinoOTA.h"
 //#include "InternalStorage.h"
@@ -69,6 +72,9 @@ const unsigned char indexIO[] = {
 
 // Store WebServer Instance.
 AsyncWebServer server(80);
+
+// Timer for HA Updates.
+SimpleTimer updateIO(1500);
 
 // Define Home Assistant Credentials.
 HADevice device;
@@ -153,6 +159,12 @@ void setup() {
     // Setup HTTP Server.
     setupHTTP();
 
+    // Register all Commands.
+    Device::addCommands();
+
+    // Setup Telnet Server.
+    Device::beginTelnet();
+
     // Wait for a short Period.
     delay(250);
 
@@ -167,7 +179,7 @@ void setup() {
 
     // Setup Pins.
     Watcher::setup();
-    //Slave::setup();
+    Slave::setup();
 }
 
 void setupHTTP() {
@@ -426,5 +438,17 @@ void loop() {
 
     // Loop Watcher Thread.
     Watcher::loop();
+
+    // Handle Telnet Stream.
+    Device::handleTelnet();
+
+    // Check if Timer is endend.
+    if (updateIO.isReady()) {
+        // Set Power Usage.
+        power.setValue(Watcher::getPower());
+
+        // Reset Timer State.
+        updateIO.reset();
+    }
 }
 

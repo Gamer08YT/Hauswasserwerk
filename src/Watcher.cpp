@@ -7,10 +7,14 @@
 #include "Watcher.h"
 #include "PINOUT.h"
 #include "SimpleTimer.h"
+#include "EmonLib.h"
 
 
 // Timer for Measuring Updates.
 SimpleTimer timerIO(500);
+
+// Store Energy Monitor Instance.
+EnergyMonitor monitor;
 
 float distanceIO, durationIO = -1;
 
@@ -39,7 +43,11 @@ bool Watcher::getLevelSwitch() {
 void Watcher::setup() {
     pinMode(LEVEL_SWITCH, INPUT);
     pinMode(LEVEL_ECHO, INPUT);
+    pinMode(METER, INPUT);
     pinMode(LEVEL_TRIGGER, OUTPUT);
+
+    // Setup Monitor.
+    monitor.current(METER, 444.4);
 }
 
 /**
@@ -71,4 +79,16 @@ void Watcher::loop() {
         // Reset Timer (Endless Loop).
         timerIO.reset();
     }
+}
+
+/**
+ * @brief Get the power of the Watcher object.
+ *
+ * This function returns the power of the Watcher object.
+ *
+ * @return The power of the Watcher object.
+ */
+
+float Watcher::getPower() {
+    return (monitor.calcIrms(1480) / 1000) * 230;
 }

@@ -7,6 +7,7 @@
 #include "ArduinoJson.h"
 #include "PINOUT.h"
 #include "Network.h"
+#include "Device.h"
 
 // Store Task Handle for Multithreading Error.
 TaskHandle_t error_task;
@@ -39,6 +40,12 @@ void Slave::setSlave(int idIO, bool stateIO) {
         sendPost(idIO, "Switch.Set", R"({"id":"0", "toggle_after": 5, "on": true})");
     else
         sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
+
+
+    Device::print("Changing PUMP");
+    Device::print(String(idIO));
+    Device::print(" to ");
+    Device::println(String(stateIO));
 }
 
 /**
@@ -139,9 +146,15 @@ String Slave::getURL(int idIO, char *urlIO) {
 void Slave::setPump(bool stateIO) {
     if (!stateIO) {
         digitalWrite(PUMP_3, HIGH);
+        digitalWrite(ERROR_LAMP, HIGH);
     } else {
         digitalWrite(PUMP_3, LOW);
+        digitalWrite(ERROR_LAMP, LOW);
     }
+
+    // Print Debug Message.
+    Device::print("Changing PUMP3 to ");
+    Device::println(String(stateIO));
 }
 
 /**
@@ -189,6 +202,12 @@ void Slave::setError(bool stateIO, String codeIO, int flashIO) {
         xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
     else
         vTaskDelete(error_task);
+
+    // Print Debug Message.
+    Device::print("Errror ");
+    Device::print(String(stateIO));
+    Device::print(" ");
+    Device::println(codeIO);
 }
 
 /**

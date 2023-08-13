@@ -16,5 +16,5 @@ void MQTT::onSmart(bool state, HASwitch *sender) {
     //Slave::setSlave(0, state);
     Slave::setPump(state);
 
-    //sender->setState(state);
+    sender->setState(state);
 }

@@ -10,6 +10,7 @@
 #include "commands/ByeCommand.h"
 #include "commands/ResetCommand.h"
 #include "commands/ClearCommand.h"
+#include "Watcher.h"
 
 // Store Telnet Instance.
 ESPTelnet telnet;
@@ -28,7 +29,7 @@ void Device::beginTelnet() {
     telnet.onInputReceived(Device::onInput);
 
     // Begin Telnet Server.
-    telnet.begin();
+    telnet.begin(23, false);
 }
 
 /**
@@ -175,7 +176,7 @@ void Device::handleCommand(String dataIO) {
         dataIO.replace("/", "");
 
         // Split via Spaces.
-        std::vector <String> splitIO = Device::split(dataIO, " ");
+        std::vector<String> splitIO = Device::split(dataIO, " ");
 
         // Loop trough Commands and Check or Execute.
         for (Command *commandIO: Device::getCommands()) {
@@ -204,4 +205,50 @@ void Device::handleCommand(String dataIO) {
             Device::println(dataIO);
         }
     }
+}
+
+/**
+ * Split String by delimiter.
+ * @param valueIO
+ * @param delimiterIO
+ * @return
+ */
+std::vector<String> Device::split(String &valueIO, const char *delimiterIO) {
+    std::vector<String> returnIO;
+    int indexIO = 0;
+    while (true) {
+        int positionIO = valueIO.indexOf(delimiterIO, indexIO);
+        if (positionIO == -1) {
+            returnIO.push_back(valueIO.substring(indexIO));
+            break;
+        } else {
+            returnIO.push_back(valueIO.substring(indexIO, positionIO));
+            indexIO = positionIO + strlen(delimiterIO);
+        }
+    }
+
+    return returnIO;
+}
+
+void Device::print_device() {
+
+    // Print Device Info.
+    Device::println("\nDevice:");
+    Device::print("MAC: ");
+    Device::println(WiFi.macAddress());
+    Device::print("IP-Address: ");
+    Device::println(WiFi.localIP().toString());
+    Device::print("FREE-RAM: ");
+    Device::println(String(esp_get_free_heap_size()));
+    Device::print("Model: ");
+    Device::println(String(ESP.getChipModel()));
+    Device::print("Power: ");
+    //Device::print(String(Watcher::getIRMS() * 230));
+    Device::println("W");
+    Device::print("Level: ");
+    Device::print(String(Watcher::getLevelDistance()));
+    Device::println("cm");
+    Device::print("LSwitch: ");
+    Device::println(String(Watcher::getLevelSwitch()));
+
 }

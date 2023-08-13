@@ -13,5 +13,5 @@ void ResetCommand::execute(std::vector<String> argsIO) {
     delay(500);
 
     // Reset ESP.
-    ESP.reset();
+    ESP.restart();
 }

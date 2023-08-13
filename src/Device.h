@@ -39,7 +39,11 @@ public:
 
     static void addCommands();
 
+    static std::vector<String> split(String &valueIO, const char *delimiterIO = "");
+
     static void handleCommand(String dataIO);
+
+    static void print_device();
 };
 
 

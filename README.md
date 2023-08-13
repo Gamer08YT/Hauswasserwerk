@@ -55,3 +55,6 @@ graph TD
     - Wenn Leitungsaufnahme zu gering, Fehlermeldung auslösen **(Trockenlaufschutz ausgelöst)**
 2. Pumpe einschalten
 3. Pumpe abschalten
+
+## Pinout
+![](assets/img/pinout.png)
