@@ -6,13 +6,22 @@
 #define HAUSWASSERWERK_WATCHER_H
 
 
+#include "utils/HANumeric.h"
+
 class Watcher {
 public:
     static void setup();
     static bool getLevelSwitch();
     static float getLevelDistance();
+    static void handleMeasurement();
     static float getPower();
     static void loop();
+
+    static void setNormal(int numeric);
+
+    static void setMax(int numeric);
+
+    static void setMin(int numeric);
 };
 
 

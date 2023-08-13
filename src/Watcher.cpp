@@ -8,6 +8,7 @@
 #include "PINOUT.h"
 #include "SimpleTimer.h"
 #include "EmonLib.h"
+#include "Slave.h"
 
 
 // Timer for Measuring Updates.
@@ -15,6 +16,17 @@ SimpleTimer timerIO(500);
 
 // Store Energy Monitor Instance.
 EnergyMonitor monitor;
+
+// Store max, min and normal Water Level.
+int level_min = 30;
+int level_max = 80;
+int level_normal = 50;
+
+// Store IRMS.
+float irmsIO = 0;
+
+// Store last Update Time.
+unsigned long updatedIO = 0;
 
 float distanceIO, durationIO = -1;
 
@@ -47,7 +59,7 @@ void Watcher::setup() {
     pinMode(LEVEL_TRIGGER, OUTPUT);
 
     // Setup Monitor.
-    monitor.current(METER, 444.4);
+    monitor.current(METER, 25);
 }
 
 /**
@@ -76,6 +88,28 @@ void Watcher::loop() {
         // Calculate the Distance.
         distanceIO = 0.017 * durationIO;
 
+        // Trigger Max Alarm.
+        if (distanceIO > level_max) {
+            // Disable all Pumps.
+            Slave::setError(true, "Tank is to full.");
+        }
+
+        // Throw Alarm because Tank is to empty.
+        if (distanceIO < level_min) {
+            // Disable/Lock Pump 3.
+            Slave::setError(true, "Tank is to empty.");
+        }
+
+        // Stop Pump1 or Pump2.
+        if (distanceIO > level_normal) {
+            Slave::setPump(false);
+        }
+
+        // Pump new Water into the Tank.
+        if (distanceIO < (level_normal - 10)) {
+            Slave::setPump(true);
+        }
+
         // Reset Timer (Endless Loop).
         timerIO.reset();
     }
@@ -90,5 +124,74 @@ void Watcher::loop() {
  */
 
 float Watcher::getPower() {
-    return (monitor.calcIrms(1480) / 1000) * 230;
+    return (float) irmsIO * 230;
+}
+
+/**
+ * @brief Handles the measurement data in the Watcher class.
+ *
+ * This function is responsible for processing the measurement data received in the Watcher class.
+ * It performs the necessary calculations and updates the internal state of the Watcher object accordingly.
+ *
+ * @param measurementData The measurement data to be handled.
+ * @return void
+ */
+
+void Watcher::handleMeasurement() {
+    // Give Function 1000ms debounce time.
+    if ((millis() - updatedIO) > 1000) {
+        // Calc only IRMS in A.
+        irmsIO = (monitor.calcIrms(1480) / 1000);
+
+        // Update Timestamp.
+        updatedIO = millis();
+    }
+}
+
+/**
+ * @brief Set the maximum value of the variable.
+ *
+ * This function sets the maximum value of the variable controlled by the Watcher class.
+ * The maximum value determines the upper limit for the valueIO parameter.
+ *
+ * @param valueIO Integer value indicating the maximum value.
+ */
+
+void Watcher::setMax(int valueIO) {
+    if (valueIO < 85) {
+        level_max = valueIO;
+    }
+}
+
+/**
+ * \brief Sets the minimum value for the Watcher.
+ *
+ * This function sets the minimum value for the Watcher. The minimum value
+ * specifies the lower limit for the input value. It ensures that the valueIO
+ * cannot be set below this limit.
+ *
+ * \param valueIO The new minimum value to be set for the Watcher.
+ */
+
+void Watcher::setMin(int valueIO) {
+    if (valueIO > 25) {
+        level_min = valueIO;
+    }
+}
+
+/**
+ * \brief Sets the normal value for IO.
+ *
+ * This function is a member of the Watcher class and is used to set the normal value for Input/Output (IO).
+ * The normal value represents the expected or reference value for the IO.
+ *
+ * \param valueIO The normal value to be set for IO.
+ *
+ * \return None.
+ */
+
+void Watcher::setNormal(int valueIO) {
+    if (valueIO > level_min && valueIO < level_max) {
+        level_normal = valueIO;
+    }
 }

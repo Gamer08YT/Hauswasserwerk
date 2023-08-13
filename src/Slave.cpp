@@ -12,6 +12,9 @@
 // Store Task Handle for Multithreading Error.
 TaskHandle_t error_task;
 
+// Store Error Lock.
+bool lockIO = false;
+
 
 /**
  * @file
@@ -198,16 +201,19 @@ void Slave::setup() {
 
 void Slave::setError(bool stateIO, String codeIO, int flashIO) {
     // Create new Task for Displaying Error Blinker.
-    if (stateIO)
+    if (stateIO && !lockIO) {
         xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
-    else
-        vTaskDelete(error_task);
+        lockIO = true;
 
-    // Print Debug Message.
-    Device::print("Errror ");
-    Device::print(String(stateIO));
-    Device::print(" ");
-    Device::println(codeIO);
+        // Print Debug Message.
+        Device::print("Errror ");
+        Device::print(String(stateIO));
+        Device::print(" ");
+        Device::println(codeIO);
+    } else {
+        vTaskDelete(error_task);
+        lockIO = false;
+    }
 }
 
 /**

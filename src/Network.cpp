@@ -37,6 +37,9 @@ void Network::setupLAN() {
     // Wait for Ethernet Connection...
     while (!((uint32_t) ETH.localIP())) {};
 
+    // Set Hostname of Client.
+    ETH.setHostname("Wasserwerk");
+
     // Print Success Message.
     Serial.print("Successfully connected with Network IP-Address ");
     Serial.println(ETH.localIP());

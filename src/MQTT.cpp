@@ -4,10 +4,7 @@
 
 #include "MQTT.h"
 #include "Slave.h"
-
-static void *onTrigger(HANumeric numericIO, HANumber *numberIO) {
-    Serial.println(numericIO.toFloat());
-}
+#include "Watcher.h"
 
 
 void MQTT::onSmart(bool state, HASwitch *sender) {
@@ -17,4 +14,16 @@ void MQTT::onSmart(bool state, HASwitch *sender) {
     Slave::setPump(state);
 
     sender->setState(state);
+}
+
+void MQTT::onNormal(HANumeric numberIO, HANumber *sender) {
+    Watcher::setNormal(numberIO.toInt8());
+}
+
+void MQTT::onMax(HANumeric numberIO, HANumber *sender) {
+    Watcher::setMax(numberIO.toInt8());
+}
+
+void MQTT::onMin(HANumeric numberIO, HANumber *sender) {
+    Watcher::setMin(numberIO.toInt8());
 }

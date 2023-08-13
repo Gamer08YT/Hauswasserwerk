@@ -74,7 +74,7 @@ const unsigned char indexIO[] = {
 AsyncWebServer server(80);
 
 // Timer for HA Updates.
-SimpleTimer updateIO(1500);
+SimpleTimer updateIO(2500);
 
 // Define Home Assistant Credentials.
 HADevice device;
@@ -110,7 +110,6 @@ HASensorNumber buffer("water_buffer", HABaseDeviceType::PrecisionP0);
 // Store Power Usage of Pump3.
 HASensorNumber power("water_load", HABaseDeviceType::PrecisionP2);
 
-void setupLAN();
 
 void setupOTA();
 
@@ -307,6 +306,7 @@ void setupHA() {
     minIO.setUnitOfMeasurement("%");
     minIO.setMode(HANumber::ModeBox);
     minIO.setRetain(true);
+    maxIO.onCommand(MQTT::onMin);
 
     // Prepare Normal Trigger.
     // Define normal Level to refill (when it's Rain and Cistern is getting to full Tank is getting filled to Max Value).
@@ -316,6 +316,7 @@ void setupHA() {
     normalIO.setUnitOfMeasurement("%");
     normalIO.setMode(HANumber::ModeBox);
     normalIO.setRetain(true);
+    maxIO.onCommand(MQTT::onNormal);
 
     // Prepare Max Trigger.
     // Max Value for example in Emergency Situation.
@@ -325,6 +326,7 @@ void setupHA() {
     maxIO.setUnitOfMeasurement("%");
     maxIO.setMode(HANumber::ModeBox);
     maxIO.setRetain(true);
+    maxIO.onCommand(MQTT::onMax);
 
     // Prepare Pump 1
     pump1.setName("Brunnen");
@@ -442,10 +444,16 @@ void loop() {
     // Handle Telnet Stream.
     Device::handleTelnet();
 
+    // Handle Load Metering.
+    Watcher::handleMeasurement();
+
     // Check if Timer is endend.
     if (updateIO.isReady()) {
         // Set Power Usage.
         power.setValue(Watcher::getPower());
+
+        // Set Level Height.
+        buffer.setValue(Watcher::getLevelDistance());
 
         // Reset Timer State.
         updateIO.reset();
