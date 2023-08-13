@@ -250,5 +250,11 @@ void Device::print_device() {
     Device::println("cm");
     Device::print("LSwitch: ");
     Device::println(String(Watcher::getLevelSwitch()));
+    Device::print("Max: ");
+    Device::println(String(Watcher::getMax()));
+    Device::print("Min: ");
+    Device::println(String(Watcher::getMin()));
+    Device::print("Normal: ");
+    Device::println(String(Watcher::getNormal()));
 
 }

@@ -22,6 +22,12 @@ public:
     static void setMax(int numeric);
 
     static void setMin(int numeric);
+
+    static int getMax();
+
+    static int getMin();
+
+    static int getNormal();
 };
 
 

@@ -300,8 +300,8 @@ void setupHA() {
 
     // Prepare Min Trigger.
     // Define min Level to refill.
-    minIO.setMax(100);
-    minIO.setMin(10);
+    minIO.setMax(85);
+    minIO.setMin(25);
     minIO.setName("Minimal");
     minIO.setUnitOfMeasurement("%");
     minIO.setMode(HANumber::ModeBox);
@@ -310,8 +310,8 @@ void setupHA() {
 
     // Prepare Normal Trigger.
     // Define normal Level to refill (when it's Rain and Cistern is getting to full Tank is getting filled to Max Value).
-    normalIO.setMax(100);
-    normalIO.setMin(10);
+    normalIO.setMax(85);
+    normalIO.setMin(25);
     normalIO.setName("Normal");
     normalIO.setUnitOfMeasurement("%");
     normalIO.setMode(HANumber::ModeBox);
@@ -320,8 +320,8 @@ void setupHA() {
 
     // Prepare Max Trigger.
     // Max Value for example in Emergency Situation.
-    maxIO.setMax(100);
-    maxIO.setMin(10);
+    maxIO.setMax(85);
+    maxIO.setMin(25);
     maxIO.setName("Maximal");
     maxIO.setUnitOfMeasurement("%");
     maxIO.setMode(HANumber::ModeBox);
@@ -368,6 +368,7 @@ void setupHA() {
     // Prepare Buffer Tank.
     buffer.setName("Füllstand Puffer");
     buffer.setIcon("mdi:duck");
+    buffer.setUnitOfMeasurement("%");
 
     // Prepare Power.
     power.setName("Druckspeicher Power");
@@ -453,7 +454,9 @@ void loop() {
         power.setValue(Watcher::getPower());
 
         // Set Level Height.
-        buffer.setValue(Watcher::getLevelDistance());
+        if (Watcher::getLevelDistance() < 0) {
+            buffer.setValue(Watcher::getLevelDistance());
+        } else buffer.setValue(0);
 
         // Set Error Message.
         errorIO.setValue(Slave::getError().c_str());

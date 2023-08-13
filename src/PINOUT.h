@@ -13,6 +13,6 @@
 #define METER 39
 #define WATER 35
 #define TANK_HEIGHT 54
-#define TANK_PERCENT 1.85
+#define UNLOCK_BUTTON 0
 
 #endif //HAUSWASSERWERK_PINOUT_H

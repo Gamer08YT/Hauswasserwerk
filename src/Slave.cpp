@@ -44,18 +44,19 @@ void Slave::setSlave(int idIO, bool stateIO) {
     if (stateIO) {
         if (!lockIO) {
             sendPost(idIO, "Switch.Set", R"({"id":"0", "toggle_after": 5, "on": true})");
-        } else {
+        } /*else {
             Device::println("PUMP1 and PUMP2 Locked!");
-        }
+        }*/
     } else {
         sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
     }
 
-    Device::print("Changing PUMP");
-    Device::print(String(idIO));
-    Device::print(" to ");
-    Device::println(String(stateIO));
-
+    if (!lockIO || !stateIO) {
+        Serial.print("Changing PUMP");
+        Serial.print(String(idIO));
+        Serial.print(" to ");
+        Serial.println(String(stateIO));
+    }
 }
 
 /**
@@ -159,13 +160,15 @@ void Slave::setPump(bool stateIO) {
     } else {
         if (!lockIO) {
             digitalWrite(PUMP_3, LOW);
-        } else
-            Device::println("PUMP3 Locked!");
+        } /*else
+            Device::println("PUMP3 Locked!");*/
     }
 
-    // Print Debug Message.
-    Device::print("Changing PUMP3 to ");
-    Device::println(String(stateIO));
+    if (!lockIO || !stateIO) {
+        // Print Debug Message.
+        Serial.print("Changing PUMP3 to ");
+        Serial.println(String(stateIO));
+    }
 }
 
 /**
@@ -220,7 +223,8 @@ void Slave::setError(bool stateIO, String codeIO, int flashIO) {
             Device::print(" ");
             Device::println(codeIO);
 
-            xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
+            if (!lockIO)
+                xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
         }
     } else {
         lockIO = false;

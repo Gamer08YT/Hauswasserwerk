@@ -29,7 +29,8 @@ float irmsIO = 0;
 // Store last Update Time.
 unsigned long updatedIO = 0;
 
-float distanceIO, durationIO = -1;
+float distanceIO, durationIO;
+float percentIO = 0;
 
 /**
  * @brief Getter method for level switch of the Watcher class.
@@ -57,6 +58,7 @@ void Watcher::setup() {
     pinMode(LEVEL_SWITCH, INPUT);
     pinMode(LEVEL_ECHO, INPUT);
     pinMode(METER, INPUT);
+    pinMode(UNLOCK_BUTTON, INPUT);
     pinMode(LEVEL_TRIGGER, OUTPUT);
 
     // Setup Monitor.
@@ -70,13 +72,25 @@ void Watcher::setup() {
  * This function returns the level distance of the Watcher. The level distance is a measurement indicating the horizontal distance between the current level and the target level.
  *
  * \return The level distance of the Watcher as an integer.
+ * 100% - 80% = 20%
  */
 
 float Watcher::getLevelDistance() {
-    return distanceIO;
+    return percentIO;
 }
 
 void Watcher::loop() {
+    // Read Unlock Button.
+    /*bool stateIO = digitalRead(UNLOCK_BUTTON);
+
+    // Unlock Error if State is true.
+    if (stateIO) {
+        Slave::setError(false);
+
+        // Print Debug Message.
+        Device::println("Unlocked Error Lock");
+    }*/
+
     if (timerIO.isReady()) {
         // Generate Trigger Signal.
         digitalWrite(LEVEL_TRIGGER, HIGH);
@@ -87,20 +101,27 @@ void Watcher::loop() {
         durationIO = pulseIn(LEVEL_ECHO, HIGH);
 
         // Calculate the Distance.
-        distanceIO = 0.017 * durationIO;
+        distanceIO = (0.017 * durationIO);
 
         // Calcualte max Percent.
-        int percentIO = TANK_PERCENT * distanceIO;
+        percentIO = (distanceIO * 100) / TANK_HEIGHT;
 
-        Device::println(String(percentIO));
+        // Set Correct Value.
+        if (percentIO > 100) {
+            percentIO = 100;
+        } else if (percentIO < 0) {
+            percentIO = 0;
+        }
 
         // Trigger Max Alarm.
+        // If Percent is < as eq. (54cm - 36%) => 18cm
         if (percentIO > level_max) {
             // Disable all Pumps.
             Slave::setError(true, "Tank is to full.");
         }
 
         // Throw Alarm because Tank is to empty.
+        // If Percent is > as eq. (54cm - 18,9%) => 35cm
         if (percentIO < level_min) {
             // Disable/Lock Pump 3.
             Slave::setError(true, "Tank is to empty.");
@@ -112,9 +133,9 @@ void Watcher::loop() {
         }
 
         // Pump new Water into the Tank.
-        if (distanceIO < (percentIO - 10)) {
+        /*if (getLevelDistance() < (percentIO - 10)) {
             Slave::setPump(true);
-        }
+        }*/
 
         // Reset Timer (Endless Loop).
         timerIO.reset();
@@ -166,7 +187,12 @@ void Watcher::handleMeasurement() {
 void Watcher::setMax(int valueIO) {
     if (valueIO < 85) {
         level_max = valueIO;
+
+
+        Device::println("Set Max Level Value to ");
+        Device::println(String(valueIO));
     }
+
 }
 
 /**
@@ -182,6 +208,9 @@ void Watcher::setMax(int valueIO) {
 void Watcher::setMin(int valueIO) {
     if (valueIO > 25) {
         level_min = valueIO;
+
+        Device::println("Set Min Level Value to ");
+        Device::println(String(valueIO));
     }
 }
 
@@ -199,5 +228,20 @@ void Watcher::setMin(int valueIO) {
 void Watcher::setNormal(int valueIO) {
     if (valueIO > level_min && valueIO < level_max) {
         level_normal = valueIO;
+
+        Device::println("Set Normal Level Value to ");
+        Device::println(String(valueIO));
     }
+}
+
+int Watcher::getMax() {
+    return level_max;
+}
+
+int Watcher::getMin() {
+    return level_min;
+}
+
+int Watcher::getNormal() {
+    return level_normal;
 }

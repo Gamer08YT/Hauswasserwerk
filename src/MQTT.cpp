@@ -18,12 +18,18 @@ void MQTT::onSmart(bool state, HASwitch *sender) {
 
 void MQTT::onNormal(HANumeric numberIO, HANumber *sender) {
     Watcher::setNormal(numberIO.toInt8());
+
+    sender->setState(Watcher::getNormal());
 }
 
 void MQTT::onMax(HANumeric numberIO, HANumber *sender) {
     Watcher::setMax(numberIO.toInt8());
+
+    sender->setState(Watcher::getMax());
 }
 
 void MQTT::onMin(HANumeric numberIO, HANumber *sender) {
     Watcher::setMin(numberIO.toInt8());
+
+    sender->setState(Watcher::getMin());
 }
