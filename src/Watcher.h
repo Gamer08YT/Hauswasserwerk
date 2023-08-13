@@ -10,6 +10,8 @@ class Watcher {
 public:
     static void setup();
     static bool getLevelSwitch();
+    static float getLevelDistance();
+    static void loop();
 };
 
 

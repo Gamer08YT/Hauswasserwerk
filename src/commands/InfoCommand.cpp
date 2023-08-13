@@ -10,5 +10,5 @@ void InfoCommand::execute(std::vector<String> argsIO) {
     Device::println(String(argsIO.size()));
 
     // Print Device Info.
-    Device::print_device();
+    //Device::print_device();
 }
