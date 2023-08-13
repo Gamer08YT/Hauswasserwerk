@@ -9,6 +9,7 @@
 #include "ESPTelnetBase.h"
 #include "ESPTelnet.h"
 #include "EscapeCodes.h"
+#include "vector"
 #include "commands/Command.h"
 
 class Device {

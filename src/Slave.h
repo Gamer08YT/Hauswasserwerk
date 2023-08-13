@@ -23,6 +23,8 @@ public:
     // Give Pump 3 Power for 30 Seconds otherwise throw Error Alarm.
     static void setPump(bool stateIO);
 
+    static String getError();
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 

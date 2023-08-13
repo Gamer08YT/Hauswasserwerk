@@ -15,6 +15,8 @@ TaskHandle_t error_task;
 // Store Error Lock.
 bool lockIO = false;
 
+// Store Error Message.
+String error_message = "";
 
 /**
  * @file
@@ -39,16 +41,21 @@ char *devices[]{
 void Slave::setSlave(int idIO, bool stateIO) {
     // todo: At OFF: check 1-2 Seconds later if Power Consumption = 0, else Shelly is defect... Trigger Alarm!
     // todo: At ON: check 1-2 Seconds later if Power Consumption > 0, else Pump Swimming Switch has no Water.
-    if (stateIO)
-        sendPost(idIO, "Switch.Set", R"({"id":"0", "toggle_after": 5, "on": true})");
-    else
+    if (stateIO) {
+        if (!lockIO) {
+            sendPost(idIO, "Switch.Set", R"({"id":"0", "toggle_after": 5, "on": true})");
+        } else {
+            Device::println("PUMP1 and PUMP2 Locked!");
+        }
+    } else {
         sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
-
+    }
 
     Device::print("Changing PUMP");
     Device::print(String(idIO));
     Device::print(" to ");
     Device::println(String(stateIO));
+
 }
 
 /**
@@ -149,10 +156,11 @@ String Slave::getURL(int idIO, char *urlIO) {
 void Slave::setPump(bool stateIO) {
     if (!stateIO) {
         digitalWrite(PUMP_3, HIGH);
-        digitalWrite(ERROR_LAMP, HIGH);
     } else {
-        digitalWrite(PUMP_3, LOW);
-        digitalWrite(ERROR_LAMP, LOW);
+        if (!lockIO) {
+            digitalWrite(PUMP_3, LOW);
+        } else
+            Device::println("PUMP3 Locked!");
     }
 
     // Print Debug Message.
@@ -201,18 +209,23 @@ void Slave::setup() {
 
 void Slave::setError(bool stateIO, String codeIO, int flashIO) {
     // Create new Task for Displaying Error Blinker.
-    if (stateIO && !lockIO) {
-        xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
-        lockIO = true;
+    if (stateIO) {
+        if (!lockIO || codeIO != error_message) {
+            lockIO = true;
 
-        // Print Debug Message.
-        Device::print("Errror ");
-        Device::print(String(stateIO));
-        Device::print(" ");
-        Device::println(codeIO);
+            // Print Debug Message.
+            error_message = codeIO;
+            Device::print("Errror ");
+            Device::print(String(stateIO));
+            Device::print(" ");
+            Device::println(codeIO);
+
+            xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
+        }
     } else {
-        vTaskDelete(error_task);
         lockIO = false;
+        error_message = "";
+        vTaskDelete(error_task);
     }
 }
 
@@ -225,10 +238,12 @@ void Slave::setError(bool stateIO, String codeIO, int flashIO) {
  */
 
 void Slave::runError(void *parameter) {
-    digitalWrite(ERROR_LAMP, LOW);
-    delay(500);
-    digitalWrite(ERROR_LAMP, HIGH);
-    delay(500);
+    while (true) {
+        digitalWrite(ERROR_LAMP, LOW);
+        delay(2500);
+        digitalWrite(ERROR_LAMP, HIGH);
+        delay(2500);
+    }
 }
 
 /**
@@ -262,6 +277,10 @@ BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
 
 float Slave::getPower(int idIO) {
     return getSlave(idIO)["apower"].as<float>();
+}
+
+String Slave::getError() {
+    return error_message;
 }
 
 

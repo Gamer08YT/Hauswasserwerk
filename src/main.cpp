@@ -455,6 +455,9 @@ void loop() {
         // Set Level Height.
         buffer.setValue(Watcher::getLevelDistance());
 
+        // Set Error Message.
+        errorIO.setValue(Slave::getError().c_str());
+
         // Reset Timer State.
         updateIO.reset();
     }

@@ -9,6 +9,7 @@
 #include "SimpleTimer.h"
 #include "EmonLib.h"
 #include "Slave.h"
+#include "Device.h"
 
 
 // Timer for Measuring Updates.
@@ -88,25 +89,30 @@ void Watcher::loop() {
         // Calculate the Distance.
         distanceIO = 0.017 * durationIO;
 
+        // Calcualte max Percent.
+        int percentIO = TANK_PERCENT * distanceIO;
+
+        Device::println(String(percentIO));
+
         // Trigger Max Alarm.
-        if (distanceIO > level_max) {
+        if (percentIO > level_max) {
             // Disable all Pumps.
             Slave::setError(true, "Tank is to full.");
         }
 
         // Throw Alarm because Tank is to empty.
-        if (distanceIO < level_min) {
+        if (percentIO < level_min) {
             // Disable/Lock Pump 3.
             Slave::setError(true, "Tank is to empty.");
         }
 
         // Stop Pump1 or Pump2.
-        if (distanceIO > level_normal) {
+        if (percentIO > level_normal) {
             Slave::setPump(false);
         }
 
         // Pump new Water into the Tank.
-        if (distanceIO < (level_normal - 10)) {
+        if (distanceIO < (percentIO - 10)) {
             Slave::setPump(true);
         }
 

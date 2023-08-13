@@ -5,13 +5,14 @@
 #ifndef HAUSWASSERWERK_PINOUT_H
 #define HAUSWASSERWERK_PINOUT_H
 
-#define ERROR_LAMP 15
-#define PUMP_3 14
+#define ERROR_LAMP 14
+#define PUMP_3 15
 #define LEVEL_SWITCH 12
 #define LEVEL_ECHO 36
 #define LEVEL_TRIGGER 4
 #define METER 39
 #define WATER 35
 #define TANK_HEIGHT 54
+#define TANK_PERCENT 1.85
 
 #endif //HAUSWASSERWERK_PINOUT_H
