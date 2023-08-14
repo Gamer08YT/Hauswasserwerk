@@ -68,17 +68,40 @@ void Watcher::setup() {
 }
 
 /**
- * \fn int Watcher::getLevelDistance()
- * \brief Retrieves the level distance of the Watcher.
- *
- * This function returns the level distance of the Watcher. The level distance is a measurement indicating the horizontal distance between the current level and the target level.
- *
- * \return The level distance of the Watcher as an integer.
- * 100% - 80% = 20%
+ * Trigger Pump1 + Pump2, if Water Level is below Normal Value.
+ * Trigger Pump3 if Water is enough.
  */
+void Watcher::handleConditions() {
+    // Check if Level is not Below Min Value.
+    // If True, disallow Pump3.
+    if (percentIO > level_min) {
+        // Check if Level is not Above Max value.
+        // If True, disallow Pump1 and Pump2.
+        if (percentIO < level_max) {
+            // Reset Error Message.
+            Slave::setError(false);
 
-float Watcher::getLevelDistance() {
-    return percentIO;
+            if (percentIO < level_normal) {
+                // Activate Pump1 or Pump2.
+                Slave::setSlave(0, true);
+                Slave::setSlave(1, true);
+
+                // Disallow Pump3 to Pump.
+                Slave::setPump(false);
+            } else {
+                // Disable Pump1 or Pump2.
+                Slave::setSlave(0, false);
+                Slave::setSlave(1, false);
+
+                // Allow Pump3 to Pump.
+                Slave::setPump(true);
+            }
+        } else {
+            Slave::setError(true, "Füllstand zu hoch.", true);
+        }
+    } else {
+        Slave::setError(true, "Füllstand zu niedrig.");
+    }
 }
 
 /**
@@ -103,25 +126,11 @@ void Watcher::loop() {
     }*/
 
     if (timerIO.isReady()) {
-        // Generate Trigger Signal.
-        digitalWrite(LEVEL_TRIGGER, HIGH);
-        delayMicroseconds(10);
-        digitalWrite(LEVEL_TRIGGER, LOW);
-
-        // Measure Duration between ECHO Pin.
-        durationIO = pulseIn(LEVEL_ECHO, HIGH);
-
-        // Calculate the Distance.
-        distanceIO = (0.017 * durationIO);
-
-        // Calcualte max Percent.
-        percentIO = (100 - (distanceIO * 100) / TANK_HEIGHT);
+        // Read Ultrasonic Sensor.
+        readUltrasonic();
 
         // Handle Conditions.
         handleConditions();
-
-        // Handle Level Switch.
-        handleLevelSwitch();
 
         // Reset Timer (Endless Loop).
         timerIO.reset();
@@ -232,83 +241,32 @@ int Watcher::getNormal() {
     return level_normal;
 }
 
-/**
- * @brief Handles the conditions in the Watcher class.
- *
- * This method is responsible for handling the conditions in the Watcher class. It processes
- * the conditions and takes appropriate action based on the result. The conditions are checked
- * against the defined criteria and necessary steps are performed accordingly.
- *
- * @param void
- *
- * @return void
- */
+void Watcher::readUltrasonic() {
+    // Generate Trigger Signal.
+    digitalWrite(LEVEL_TRIGGER, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(LEVEL_TRIGGER, LOW);
 
-bool setSlave1Status = false;
-bool setSlave2Status = false;
-bool setPumpStatus = false;
+    // Measure Duration between ECHO Pin.
+    durationIO = pulseIn(LEVEL_ECHO, HIGH);
 
-void Watcher::handleConditions() {
-    if (percentIO >= 80) {
-        // Wenn der Füllstand 80 erreicht oder übersteigt, Setzen Sie setSlave1 und setSlave2 auf false.
-        if (setSlave1Status || setSlave2Status) { // Nur Status setzen, wenn notwendig
-            Slave::setSlave(0, false);
-            Slave::setSlave(1, false);
+    // Calculate the Distance.
+    distanceIO = (0.017 * durationIO);
 
-            setSlave1Status = false;
-            setSlave2Status = false;
-        }
-    } else {
-        if (!setSlave1Status || !setSlave2Status) { // Nur Status setzen, wenn notwendig
-            Slave::setSlave(0, true);
-            Slave::setSlave(1, true);
-
-            setSlave1Status = true;
-            setSlave2Status = true;
-        }
-    }
-
-    if (percentIO > 30) {
-        // Wenn der Füllstand über 30 liegt, Setze setPump auf true.
-        if (!setPumpStatus) { // Nur Status setzen, wenn notwendig
-            Slave::setPump(true);
-
-            setPumpStatus = true;
-        }
-    } else {
-        if (setPumpStatus) { // Nur Status setzen, wenn notwendig
-            // Wenn der Füllstand unter 30 sinkt, setze setPump auf false.
-            Slave::setPump(false);
-
-            setPumpStatus = false;
-        }
-    }
-    if (percentIO < 50) {
-        // Wenn der Füllstand unter 50 sinkt, setze setSlave1 und setSlave2 auf true.
-        Slave::setSlave(0, true);
-        Slave::setSlave(1, true);
-    }
+    // Calcualte max Percent.
+    percentIO = (100 - (distanceIO * 100) / TANK_HEIGHT);
 }
 
-void Watcher::handleLevelSwitch() {
-    level_state = digitalRead(LEVEL_SWITCH);
+/**
+ * \fn int Watcher::getLevelDistance()
+ * \brief Retrieves the level distance of the Watcher.
+ *
+ * This function returns the level distance of the Watcher. The level distance is a measurement indicating the horizontal distance between the current level and the target level.
+ *
+ * \return The level distance of the Watcher as an integer.
+ * 100% - 80% = 20%
+ */
 
-    if (!level_state) {
-        // Disable all Pump3.
-        if (setPumpStatus) { // Nur Status setzen, wenn notwendig
-            Slave::setPump(false);
-
-            setPumpStatus = false;
-        }
-
-        Slave::setError(true, "Tank is to empty (LEVEL SWITCH).");
-    } else {
-        if (!setPumpStatus && (percentIO > 30)) {  // Prüfen, ob die Pumpe wieder eingeschaltet werden kann
-            Slave::setPump(true);
-
-            setPumpStatus = true;
-
-            Slave::setError(false);
-        }
-    }
+float Watcher::getLevelDistance() {
+    return percentIO;
 }

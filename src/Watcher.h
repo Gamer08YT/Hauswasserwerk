@@ -34,7 +34,11 @@ public:
 private:
     static void handleConditions();
 
-    static void handleLevelSwitch();
+    static void readUltrasonic();
+
+    static bool allowFilling;
+
+    static bool allowPressure;
 };
 
 

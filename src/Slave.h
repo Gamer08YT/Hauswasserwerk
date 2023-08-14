@@ -18,7 +18,7 @@ public:
 
     static float getPower(int idIO);
 
-    static void setError(bool stateIO, String codeIO = "Unknown Error", int flashIO = 500);
+    static void setError(bool stateIO, String codeIO = "Unknown Error", bool flashIO = false);
 
     // Give Pump 3 Power for 30 Seconds otherwise throw Error Alarm.
     static void setPump(bool stateIO);

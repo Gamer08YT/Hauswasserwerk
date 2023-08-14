@@ -8,6 +8,7 @@
 #include "PINOUT.h"
 #include "Network.h"
 #include "Device.h"
+#include "Adafruit_SSD1306.h"
 
 // Store Task Handle for Multithreading Error.
 TaskHandle_t error_task;
@@ -17,6 +18,10 @@ bool lockIO = false;
 
 // Store Error Message.
 String error_message = "";
+
+// Store OLED Instance.
+Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
 
 bool states[] = {
         false,
@@ -197,6 +202,11 @@ void Slave::setup() {
 
     digitalWrite(PUMP_3, HIGH);
     digitalWrite(ERROR_LAMP, HIGH);
+
+    // Display Setup.
+    if(!oled_display.begin(SSD1306_SWITCHCAPVCC, 0x78)) {
+        setError(true, "Display Error");
+    }
 }
 
 /**
@@ -221,7 +231,7 @@ void Slave::setup() {
  *          Use clearError() to clear the error state and code manually when necessary.
  */
 
-void Slave::setError(bool stateIO, String codeIO, int flashIO) {
+void Slave::setError(bool stateIO, String codeIO, bool flashIO) {
     // Create new Task for Displaying Error Blinker.
     if (stateIO) {
         if (!lockIO || codeIO != error_message) {
@@ -232,7 +242,7 @@ void Slave::setError(bool stateIO, String codeIO, int flashIO) {
             Device::print(" ");
             Device::println(codeIO);
 
-            if (!lockIO) {
+            if (!lockIO && flashIO) {
                 xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
             }
 
@@ -241,13 +251,22 @@ void Slave::setError(bool stateIO, String codeIO, int flashIO) {
     } else {
         if (lockIO) {
             lockIO = false;
-            error_message = "Unknown";
-            vTaskDelete(error_task);
+            error_message = "";
+
+            // Get Task by Handle.
+            TaskHandle_t taskIO = xTaskGetHandle("error");
+
+            if (taskIO != NULL)
+                vTaskDelete(error_task);
 
             // Disable Error Lamp...
             digitalWrite(ERROR_LAMP, HIGH);
         }
     }
+
+    oled_display.clearDisplay();
+    oled_display.println(error_message);
+    oled_display.display();
 }
 
 /**

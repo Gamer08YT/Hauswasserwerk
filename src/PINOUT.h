@@ -14,5 +14,9 @@
 #define WATER 35
 #define TANK_HEIGHT 54
 #define UNLOCK_BUTTON 0
+#define SDA 5
+#define SCL 17
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
 
 #endif //HAUSWASSERWERK_PINOUT_H
