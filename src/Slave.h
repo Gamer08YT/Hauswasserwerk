@@ -25,6 +25,8 @@ public:
 
     static String getError();
 
+    static bool getState(int idIO);
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 

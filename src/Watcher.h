@@ -5,16 +5,18 @@
 #ifndef HAUSWASSERWERK_WATCHER_H
 #define HAUSWASSERWERK_WATCHER_H
 
-
-#include "utils/HANumeric.h"
-
 class Watcher {
 public:
     static void setup();
+
     static bool getLevelSwitch();
+
     static float getLevelDistance();
+
     static void handleMeasurement();
+
     static float getPower();
+
     static void loop();
 
     static void setNormal(int numeric);
@@ -28,6 +30,11 @@ public:
     static int getMin();
 
     static int getNormal();
+
+private:
+    static void handleConditions();
+
+    static void handleLevelSwitch();
 };
 
 

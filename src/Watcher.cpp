@@ -23,6 +23,8 @@ int level_min = 30;
 int level_max = 80;
 int level_normal = 50;
 
+bool level_state;
+
 // Store IRMS.
 float irmsIO = 0;
 
@@ -79,6 +81,15 @@ float Watcher::getLevelDistance() {
     return percentIO;
 }
 
+/**
+ * \brief Executes the loop code.
+ *
+ * This function is responsible for executing the main loop code of the `Watcher` class.
+ * It continuously monitors and performs certain actions based on certain conditions.
+ *
+ * \return None.
+ */
+
 void Watcher::loop() {
     // Read Unlock Button.
     /*bool stateIO = digitalRead(UNLOCK_BUTTON);
@@ -104,42 +115,18 @@ void Watcher::loop() {
         distanceIO = (0.017 * durationIO);
 
         // Calcualte max Percent.
-        percentIO = (distanceIO * 100) / TANK_HEIGHT;
+        percentIO = (100 - (distanceIO * 100) / TANK_HEIGHT);
 
-        // Set Correct Value.
-        if (percentIO > 100) {
-            percentIO = 100;
-        } else if (percentIO < 0) {
-            percentIO = 0;
-        }
+        // Handle Conditions.
+        handleConditions();
 
-        // Trigger Max Alarm.
-        // If Percent is < as eq. (54cm - 36%) => 18cm
-        if (percentIO > level_max) {
-            // Disable all Pumps.
-            Slave::setError(true, "Tank is to full.");
-        }
-
-        // Throw Alarm because Tank is to empty.
-        // If Percent is > as eq. (54cm - 18,9%) => 35cm
-        if (percentIO < level_min) {
-            // Disable/Lock Pump 3.
-            Slave::setError(true, "Tank is to empty.");
-        }
-
-        // Stop Pump1 or Pump2.
-        if (percentIO > level_normal) {
-            Slave::setPump(false);
-        }
-
-        // Pump new Water into the Tank.
-        /*if (getLevelDistance() < (percentIO - 10)) {
-            Slave::setPump(true);
-        }*/
+        // Handle Level Switch.
+        handleLevelSwitch();
 
         // Reset Timer (Endless Loop).
         timerIO.reset();
     }
+
 }
 
 /**
@@ -187,7 +174,6 @@ void Watcher::handleMeasurement() {
 void Watcher::setMax(int valueIO) {
     if (valueIO < 85) {
         level_max = valueIO;
-
 
         Device::println("Set Max Level Value to ");
         Device::println(String(valueIO));
@@ -244,4 +230,85 @@ int Watcher::getMin() {
 
 int Watcher::getNormal() {
     return level_normal;
+}
+
+/**
+ * @brief Handles the conditions in the Watcher class.
+ *
+ * This method is responsible for handling the conditions in the Watcher class. It processes
+ * the conditions and takes appropriate action based on the result. The conditions are checked
+ * against the defined criteria and necessary steps are performed accordingly.
+ *
+ * @param void
+ *
+ * @return void
+ */
+
+bool setSlave1Status = false;
+bool setSlave2Status = false;
+bool setPumpStatus = false;
+
+void Watcher::handleConditions() {
+    if (percentIO >= 80) {
+        // Wenn der Füllstand 80 erreicht oder übersteigt, Setzen Sie setSlave1 und setSlave2 auf false.
+        if (setSlave1Status || setSlave2Status) { // Nur Status setzen, wenn notwendig
+            Slave::setSlave(0, false);
+            Slave::setSlave(1, false);
+
+            setSlave1Status = false;
+            setSlave2Status = false;
+        }
+    } else {
+        if (!setSlave1Status || !setSlave2Status) { // Nur Status setzen, wenn notwendig
+            Slave::setSlave(0, true);
+            Slave::setSlave(1, true);
+
+            setSlave1Status = true;
+            setSlave2Status = true;
+        }
+    }
+
+    if (percentIO > 30) {
+        // Wenn der Füllstand über 30 liegt, Setze setPump auf true.
+        if (!setPumpStatus) { // Nur Status setzen, wenn notwendig
+            Slave::setPump(true);
+
+            setPumpStatus = true;
+        }
+    } else {
+        if (setPumpStatus) { // Nur Status setzen, wenn notwendig
+            // Wenn der Füllstand unter 30 sinkt, setze setPump auf false.
+            Slave::setPump(false);
+
+            setPumpStatus = false;
+        }
+    }
+    if (percentIO < 50) {
+        // Wenn der Füllstand unter 50 sinkt, setze setSlave1 und setSlave2 auf true.
+        Slave::setSlave(0, true);
+        Slave::setSlave(1, true);
+    }
+}
+
+void Watcher::handleLevelSwitch() {
+    level_state = digitalRead(LEVEL_SWITCH);
+
+    if (!level_state) {
+        // Disable all Pump3.
+        if (setPumpStatus) { // Nur Status setzen, wenn notwendig
+            Slave::setPump(false);
+
+            setPumpStatus = false;
+        }
+
+        Slave::setError(true, "Tank is to empty (LEVEL SWITCH).");
+    } else {
+        if (!setPumpStatus && (percentIO > 30)) {  // Prüfen, ob die Pumpe wieder eingeschaltet werden kann
+            Slave::setPump(true);
+
+            setPumpStatus = true;
+
+            Slave::setError(false);
+        }
+    }
 }

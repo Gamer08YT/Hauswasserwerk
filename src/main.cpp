@@ -82,7 +82,7 @@ HADevice device;
 WiFiClient client;
 
 // Define Home Assistant MQTT Instance.
-HAMqtt mqtt(client, device, 24);
+HAMqtt mqtt(client, device, 13);
 
 // Store Refill Trigger.
 HANumber minIO("water_min", HABaseDeviceType::PrecisionP0);
@@ -453,13 +453,15 @@ void loop() {
         // Set Power Usage.
         power.setValue(Watcher::getPower());
 
-        // Set Level Height.
-        if (Watcher::getLevelDistance() < 0) {
-            buffer.setValue(Watcher::getLevelDistance());
-        } else buffer.setValue(0);
+        // Set Level Height.{
+        buffer.setValue(Watcher::getLevelDistance());
 
         // Set Error Message.
         errorIO.setValue(Slave::getError().c_str());
+
+        pump1.setState(Slave::getState(0));
+        pump2.setState(Slave::getState(1));
+        pump3.setState(Slave::getState(2));
 
         // Reset Timer State.
         updateIO.reset();
