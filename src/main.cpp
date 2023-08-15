@@ -457,6 +457,9 @@ void loop() {
     // Handle Load Metering.
     Watcher::handleMeasurement();
 
+    // Handle Slave Loop.
+    Slave::loop();
+
     // Check if Timer is endend.
     if (updateIO.isReady()) {
         // Set Power Usage.

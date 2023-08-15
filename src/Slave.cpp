@@ -9,6 +9,7 @@
 #include "Network.h"
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
+#include "SimpleTimer.h"
 
 // Store Task Handle for Multithreading Error.
 TaskHandle_t error_task;
@@ -20,7 +21,10 @@ bool lockIO = false;
 String error_message = "";
 
 // Store Display Message.
-String display_message = "";
+String display_message, display_title = "";
+
+// Timer for DIM OLED:
+SimpleTimer dimIO(5000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -385,32 +389,39 @@ void Slave::showBootscreen() {
  * @param contentIO
  */
 void Slave::infoDisplay(const char *titleIO, String contentIO) {
-    oled_display.clearDisplay();
-    oled_display.setCursor(0, 0);
-    oled_display.printlnUTF8(const_cast<char *>(titleIO));
-    oled_display.drawLine(0, 15, 128, 15, 1);
-    oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
-    oled_display.display();
-    delay(250);
+    if (display_message != contentIO && display_title != titleIO) {
+        oled_display.clearDisplay();
+        oled_display.setCursor(0, 0);
+        oled_display.printlnUTF8(const_cast<char *>(titleIO));
+        oled_display.drawLine(0, 15, 128, 15, 1);
+        oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
+        oled_display.display();
+        delay(250);
+
+        display_message = contentIO;
+        display_title = titleIO;
+    }
 }
 
 void Slave::updateLine(String contentIO, int xIO, int yIO) {
-    int currentIO = 0;
-
-    // Clear given Line.
-    for (currentIO = 0; yIO <= 12 * yIO; currentIO++) {
-        for (xIO = 0; xIO < 127; xIO++) {
-            oled_display.drawPixel(xIO, currentIO, BLACK);
-        }
-    }
-
-    // Draw new Data on Line.
+    // Override Line.
+    oled_display.fillRect(xIO, yIO, 128, 12, BLACK);
     oled_display.setCursor(xIO, yIO);
 
     // Print new Data.
     oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
 
     oled_display.display();
+
+    delay(250);
+}
+
+void Slave::loop() {
+    // Dim Display if Time is exceeded.
+    if (dimIO.isReady()) {
+        oled_display.dim(true);
+        oled_display.display();
+    }
 }
 
 

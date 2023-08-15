@@ -35,6 +35,8 @@ public:
 
     static void updateLine(String contentIO, int xIO, int yIO);
 
+    static void loop();
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 

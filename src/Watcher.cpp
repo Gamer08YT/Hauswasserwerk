@@ -102,7 +102,7 @@ void Watcher::handleConditions() {
             }
 
             // Update Fill Level.
-            //Slave::updateLine(String(percentIO), 0, 30);
+            Slave::updateLine(String(percentIO), 0, 42);
         } else {
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
         }
