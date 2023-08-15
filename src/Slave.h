@@ -18,7 +18,7 @@ public:
 
     static float getPower(int idIO);
 
-    static void setError(bool stateIO, String codeIO = "Unknown Error", bool flashIO = false);
+    static void setError(bool stateIO, String codeIO = "Unknown Error", bool flashIO = false, String displayIO = "UNKNOWN");
 
     // Give Pump 3 Power for 30 Seconds otherwise throw Error Alarm.
     static void setPump(bool stateIO);
@@ -30,6 +30,10 @@ public:
     static void setDisplay(String messageIO);
 
     static void showBootscreen();
+
+    static void infoDisplay(const char *titleIO, String contentIO);
+
+    static void updateLine(String contentIO, int xIO, int yIO);
 
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);

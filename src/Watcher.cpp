@@ -82,18 +82,16 @@ void Watcher::handleConditions() {
             Slave::setError(false);
 
             if (percentIO < level_normal) {
-                // Show Display Message.
-                Slave::setDisplay("Fülle Tank...");
+                // Update Display Fill-state.
+                Slave::infoDisplay("Füllstand:", "FÜLLEN...");
 
-                // Activate Pump1 or Pump2.
-                Slave::setSlave(0, true);
-                Slave::setSlave(1, true);
+                refill();
 
                 // Disallow Pump3 to Pump.
                 Slave::setPump(false);
             } else {
-                // Show Display Message.
-                Slave::setDisplay("Druckspeicher bereit...");
+                // Update Display Fill-state.
+                Slave::infoDisplay("Füllstand:", "BEREIT");
 
                 // Disable Pump1 or Pump2.
                 Slave::setSlave(0, false);
@@ -102,11 +100,19 @@ void Watcher::handleConditions() {
                 // Allow Pump3 to Pump.
                 Slave::setPump(true);
             }
+
+            // Update Fill Level.
+            //Slave::updateLine(String(percentIO), 0, 30);
         } else {
-            Slave::setError(true, "Füllstand zu hoch.", true);
+            Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
         }
     } else {
-        Slave::setError(true, "Füllstand zu niedrig.");
+        // Disallow Pump3 to Pump.
+        Slave::setPump(false);
+
+        refill();
+
+        Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
     }
 }
 
@@ -275,4 +281,10 @@ void Watcher::readUltrasonic() {
 
 float Watcher::getLevelDistance() {
     return percentIO;
+}
+
+void Watcher::refill() {
+    // Activate Pump1 or Pump2.
+    Slave::setSlave(0, true);
+    Slave::setSlave(1, true);
 }

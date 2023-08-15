@@ -157,7 +157,7 @@ void setup() {
     Serial.println("Starting Hauswasserwerk...");
 
     // Set Display Message.
-    Slave::setDisplay("Hochfahren...");
+    Slave::infoDisplay("System", "BOOTING");
 
     // Setup LAN Connection.
     Network::setupLAN();
@@ -216,6 +216,9 @@ void setupHTTP() {
 
 void onConnected() {
     Serial.println("Connected to MQTT Server.");
+
+    // Set Info Display.
+    Slave::infoDisplay("MQTT", "VERBUNDEN");
 }
 
 /**

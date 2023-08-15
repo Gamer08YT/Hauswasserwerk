@@ -11,6 +11,7 @@
 #include "commands/ResetCommand.h"
 #include "commands/ClearCommand.h"
 #include "Watcher.h"
+#include "Slave.h"
 
 // Store Telnet Instance.
 ESPTelnet telnet;
@@ -30,6 +31,9 @@ void Device::beginTelnet() {
 
     // Begin Telnet Server.
     telnet.begin(23, false);
+
+    // Set Info Display.
+    Slave::infoDisplay("Telnet", "ONLINE");
 }
 
 /**

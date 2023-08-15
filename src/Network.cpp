@@ -42,7 +42,7 @@ void Network::setupLAN() {
     ETH.setHostname("Wasserwerk");
 
     // Set Display Message.
-    Slave::setDisplay("Netzwerk verbunden...");
+    Slave::infoDisplay("Netwerk", "VERBUNDEN");
 
     // Print Success Message.
     Serial.print("Successfully connected with Network IP-Address ");
