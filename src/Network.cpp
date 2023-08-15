@@ -4,6 +4,7 @@
 
 #include <ETH.h>
 #include "Network.h"
+#include "Slave.h"
 
 #define ETH_ADDR        1
 #define ETH_POWER_PIN   16//-1 //16 // Do not use it, it can cause conflict during the software reset.
@@ -39,6 +40,9 @@ void Network::setupLAN() {
 
     // Set Hostname of Client.
     ETH.setHostname("Wasserwerk");
+
+    // Set Display Message.
+    Slave::setDisplay("Netzwerk verbunden...");
 
     // Print Success Message.
     Serial.print("Successfully connected with Network IP-Address ");

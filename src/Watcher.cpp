@@ -82,6 +82,9 @@ void Watcher::handleConditions() {
             Slave::setError(false);
 
             if (percentIO < level_normal) {
+                // Show Display Message.
+                Slave::setDisplay("Fülle Tank...");
+
                 // Activate Pump1 or Pump2.
                 Slave::setSlave(0, true);
                 Slave::setSlave(1, true);
@@ -89,6 +92,9 @@ void Watcher::handleConditions() {
                 // Disallow Pump3 to Pump.
                 Slave::setPump(false);
             } else {
+                // Show Display Message.
+                Slave::setDisplay("Druckspeicher bereit...");
+
                 // Disable Pump1 or Pump2.
                 Slave::setSlave(0, false);
                 Slave::setSlave(1, false);

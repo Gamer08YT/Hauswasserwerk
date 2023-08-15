@@ -27,6 +27,10 @@ public:
 
     static bool getState(int idIO);
 
+    static void setDisplay(String messageIO);
+
+    static void showBootscreen();
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 
@@ -35,6 +39,7 @@ private:
     static String getURL(int idIO, char *urlIO);
 
     static void runError(void *parameter);
+
 };
 
 

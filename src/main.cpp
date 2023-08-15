@@ -146,8 +146,18 @@ void setup() {
     // Begin Serial Console.
     Serial.begin(115200);
 
+    // Setup Pins.
+    Watcher::setup();
+    Slave::setup();
+
+    // Display Bootscreen.
+    Slave::showBootscreen();
+
     // Print Debug Message.
     Serial.println("Starting Hauswasserwerk...");
+
+    // Set Display Message.
+    Slave::setDisplay("Hochfahren...");
 
     // Setup LAN Connection.
     Network::setupLAN();
@@ -175,10 +185,6 @@ void setup() {
 
     // Setup MQTT.
     setupMQTT();
-
-    // Setup Pins.
-    Watcher::setup();
-    Slave::setup();
 }
 
 void setupHTTP() {
