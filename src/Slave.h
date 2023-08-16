@@ -46,6 +46,7 @@ private:
 
     static void runError(void *parameter);
 
+    static void setContrast(int valueIO);
 };
 
 

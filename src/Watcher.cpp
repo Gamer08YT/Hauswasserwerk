@@ -60,7 +60,6 @@ void Watcher::setup() {
     pinMode(LEVEL_SWITCH, INPUT);
     pinMode(LEVEL_ECHO, INPUT);
     pinMode(METER, INPUT);
-    pinMode(UNLOCK_BUTTON, INPUT);
     pinMode(LEVEL_TRIGGER, OUTPUT);
 
     // Setup Monitor.
@@ -126,17 +125,7 @@ void Watcher::handleConditions() {
  */
 
 void Watcher::loop() {
-    // Read Unlock Button.
-    /*bool stateIO = digitalRead(UNLOCK_BUTTON);
-
-    // Unlock Error if State is true.
-    if (stateIO) {
-        Slave::setError(false);
-
-        // Print Debug Message.
-        Device::println("Unlocked Error Lock");
-    }*/
-
+    // Read Ultrasonic Sensor.
     if (timerIO.isReady()) {
         // Read Ultrasonic Sensor.
         readUltrasonic();

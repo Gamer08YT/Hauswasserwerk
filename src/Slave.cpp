@@ -23,12 +23,18 @@ String error_message = "";
 // Store Display Message.
 String display_message, display_title = "";
 
+bool display_state = true;
+
 // Timer for DIM OLED:
 SimpleTimer dimIO(5000);
+
+// Timer for disablind OLED.
+SimpleTimer disableIO(15000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
+int contrast = 128;
 
 bool states[] = {
         false,
@@ -224,6 +230,7 @@ void Slave::setup() {
     // Setup IC2 Bus.
     Wire.begin(SDA, SCL);
 
+    pinMode(UNLOCK_BUTTON, INPUT_PULLUP);
     pinMode(PUMP_3, OUTPUT);
     pinMode(ERROR_LAMP, OUTPUT);
 
@@ -238,7 +245,8 @@ void Slave::setup() {
     // Set Default Size and disable Wrap.
     oled_display.setTextSize(1.5);
     oled_display.setTextColor(WHITE);
-
+    oled_display.ssd1306_command(SSD1306_SETPRECHARGE);
+    oled_display.ssd1306_command(17);
 }
 
 /**
@@ -381,6 +389,9 @@ void Slave::showBootscreen() {
     oled_display.setTextWrap(true);
 
     delay(2500);
+
+    // Set Contrast.
+    setContrast(128);
 }
 
 /**
@@ -390,37 +401,72 @@ void Slave::showBootscreen() {
  */
 void Slave::infoDisplay(const char *titleIO, String contentIO) {
     if (display_message != contentIO && display_title != titleIO) {
-        oled_display.clearDisplay();
-        oled_display.setCursor(0, 0);
-        oled_display.printlnUTF8(const_cast<char *>(titleIO));
-        oled_display.drawLine(0, 15, 128, 15, 1);
-        oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
-        oled_display.display();
-        delay(250);
+        if (display_state) {
+            oled_display.clearDisplay();
+            oled_display.setCursor(0, 0);
+            oled_display.printlnUTF8(const_cast<char *>(titleIO));
+            oled_display.drawLine(0, 15, 128, 15, 1);
+            oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
+            oled_display.display();
+            delay(250);
 
-        display_message = contentIO;
-        display_title = titleIO;
+            display_message = contentIO;
+            display_title = titleIO;
+        }
     }
 }
 
 void Slave::updateLine(String contentIO, int xIO, int yIO) {
-    // Override Line.
-    oled_display.fillRect(xIO, yIO, 128, 12, BLACK);
-    oled_display.setCursor(xIO, yIO);
+    if (display_state) {
+        // Override Line.
+        oled_display.fillRect(xIO, yIO, 128, 12, BLACK);
+        oled_display.setCursor(xIO, yIO);
 
-    // Print new Data.
-    oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
+        // Print new Data.
+        oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
 
-    oled_display.display();
+        oled_display.display();
 
-    delay(250);
+        delay(250);
+    }
 }
 
 void Slave::loop() {
     // Dim Display if Time is exceeded.
     if (dimIO.isReady()) {
-        oled_display.dim(true);
+        setContrast(8);
         oled_display.display();
+    }
+
+    // Disable OLED.
+    if (disableIO.isReady()) {
+        display_state = false;
+        oled_display.clearDisplay();
+        oled_display.ssd1306_command(SSD1306_DISPLAYOFF);
+    }
+
+    // Read Unlock Button.
+    bool stateIO = digitalRead(UNLOCK_BUTTON);
+
+    // Unlock Error or Un-dim Display.
+    if (!stateIO) {
+        dimIO.reset();
+        disableIO.reset();
+        display_state = true;
+        oled_display.ssd1306_command(SSD1306_DISPLAYON);
+        setContrast(128);
+
+        // Update Display Message.
+        infoDisplay("Button", "CLICKED");
+    }
+}
+
+void Slave::setContrast(int valueIO) {
+    if (valueIO != contrast) {
+        oled_display.ssd1306_command(SSD1306_SETCONTRAST);
+        oled_display.ssd1306_command(valueIO);
+
+        contrast = valueIO;
     }
 }
 
