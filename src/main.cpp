@@ -478,5 +478,10 @@ void loop() {
         // Reset Timer State.
         updateIO.reset();
     }
+
+    // Check Ethernet Connection.
+    if(!ETH.linkUp()) {
+        Slave::setError(true, "Loosed Connection with Ethernet", false, "ETHERNET [X]");
+    }
 }
 

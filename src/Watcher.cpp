@@ -109,9 +109,14 @@ void Watcher::handleConditions() {
         // Disallow Pump3 to Pump.
         Slave::setPump(false);
 
+        // Avoid Ultrasonic Errors.
+        //if (percentIO > 0) {
         refill();
 
         Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
+        /**} else {
+            Slave::setError(true, "Ultraschallt fehler.", false, "Ultraschall [X]");
+        }**/
     }
 }
 

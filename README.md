@@ -12,12 +12,12 @@ bereitgestellt.
 
 ## Todos:
 
-- Telnet Server
-- Automatische Befüllung des Pufferspeichers.
+- Telnet Server ✅
+- Automatische Befüllung des Pufferspeichers. ✅
 - Automatische Befüllung nach Vorrang.
-- Fehlermeldung (Anhand Füllstand, bei BSPW. 10% Druckspeicherpumpe nicht mehr einschalten.)
+- Fehlermeldung (Anhand Füllstand, bei BSPW. 10% Druckspeicherpumpe nicht mehr einschalten.) ✅
 - Fehlermeldung (Anhand Leistungsaufnahme)
-- Füllstandüberwachung (Ultraschall)
+- Füllstandüberwachung (Ultraschall) ✅
 - Wassermelder
 - PUSH Benachrichtigungen
 

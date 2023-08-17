@@ -31,9 +31,9 @@ public:
 
     static void showBootscreen();
 
-    static void infoDisplay(const char *titleIO, String contentIO);
+    static void infoDisplay(const char *titleIO, String contentIO, bool forceIO = false);
 
-    static void updateLine(String contentIO, int xIO, int yIO);
+    static void updateLine(String contentIO, int xIO, int yIO, bool forceIO = false);
 
     static void loop();
 
@@ -47,6 +47,8 @@ private:
     static void runError(void *parameter);
 
     static void setContrast(int valueIO);
+
+    static void setDisplayActive();
 };
 
 
