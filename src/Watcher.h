@@ -33,6 +33,10 @@ public:
 
     static float getDistance();
 
+    [[noreturn]] static void runMeasurements(void *parameter);
+
+    static void setupTask();
+
 private:
     static void handleConditions();
 

@@ -7,14 +7,9 @@
 #include "Slave.h"
 #include "ArduinoJson.h"
 #include "PINOUT.h"
-#include "Network.h"
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
 #include "SimpleTimer.h"
-#include "NTPClient.h"
-
-// Store Task Handle for Multithreading Error.
-TaskHandle_t error_task;
 
 // Store Error Lock.
 bool lockIO = false;
@@ -31,13 +26,11 @@ bool display_button = false;
 // Timer for DIM OLED:
 SimpleTimer dimIO(5000);
 
+// Timer for NTP Update.
+SimpleTimer ntpupdateIO(1000);
+
 // Timer for disabling OLED.
 SimpleTimer disableIO(30000);
-
-WiFiUDP udp;
-
-// Store NTPClient Instance.
-NTPClient ntpclient(udp, "pool.ntp.org", 36000, 60000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -76,9 +69,12 @@ const unsigned char logo[] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
  * @brief Declaration of the devices variable.
  */
 char *devices[]{
-        "192.168.1.240"
+        "192.168.1.240",
+        "192.168.1.241"
 };
 
+
+TaskHandle_t ntp_task;
 
 /**
  * \brief Set the slave ID and state.
@@ -91,21 +87,28 @@ char *devices[]{
  * \return void
  */
 
-void Slave::setSlave(int idIO, bool stateIO) {
+void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
     // todo: At OFF: check 1-2 Seconds later if Power Consumption = 0, else Shelly is defect... Trigger Alarm!
     // todo: At ON: check 1-2 Seconds later if Power Consumption > 0, else Pump Swimming Switch has no Water.
     if (stateIO) {
         if (!lockIO) {
-            //sendPost(idIO, "Switch.Set", R"({"id":"0", "toggle_after": 5, "on": true})");
-        } /*else {
+            String contentIO;
+
+            contentIO += R"({"id":"0", "toggle_after": )";
+            contentIO += timeIO;
+            contentIO += R"(, "on": true})";
+
+            sendPost(idIO, "Switch.Set", contentIO);
+        } else {
             Device::println("PUMP1 and PUMP2 Locked!");
-        }*/
+        }
     } else {
         //sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
     }
 
     // Set State Boolean.
-    states[idIO] = stateIO;
+    if (stateIO && !lockIO)
+        states[idIO] = stateIO;
 
     /*if (!lockIO || !stateIO) {
         Serial.print("Changing PUMP");
@@ -165,6 +168,8 @@ BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, Strin
         // Print Response.
         Serial.println(http.getString());
     }
+
+    Device::println(http.getString());
 
     // Create new Document.
     DynamicJsonDocument document(1024);
@@ -259,6 +264,23 @@ void Slave::setup() {
     oled_display.setTextColor(WHITE);
     oled_display.ssd1306_command(SSD1306_SETPRECHARGE);
     oled_display.ssd1306_command(17);
+
+    // On NTP Event.
+    /*NTP.onNTPSyncEvent([](NTPSyncEvent_t errorIO) {
+        if (errorIO) {
+            Serial.print("Time Sync error: ");
+            if (errorIO == noResponse)
+                Slave::infoDisplay("NTP", "CONNECTION ERROR");
+            else if (errorIO == invalidAddress)
+                Slave::infoDisplay("NTP", "INVALID ADDRESS");
+        } else {
+            Serial.print("Got NTP time: ");
+            Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
+        }
+    });*/
+
+    /*DateTime.setServer("pool.ntp.org");
+    DateTime.begin();*/
 }
 
 /**
@@ -317,8 +339,8 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             if (taskIO != NULL)
                 //vTaskDelete(error_task);
 
-            // Disable Error Lamp...
-            digitalWrite(ERROR_LAMP, HIGH);
+                // Disable Error Lamp...
+                digitalWrite(ERROR_LAMP, HIGH);
         }
     }
 }
@@ -423,7 +445,6 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
             oled_display.drawLine(0, 15, 128, 15, 1);
             oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
             oled_display.display();
-            delay(250);
 
             display_message = contentIO;
             display_title = titleIO;
@@ -433,6 +454,24 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
         }
     }
 }
+
+/**
+ * \brief Update a line in the Slave class.
+ *
+ * This function updates a line in the Slave class by replacing its content and/or modifying its position.
+ *
+ * \param contentIO The content of the line to be updated.
+ * \param xIO The new x-coordinate position of the line.
+ * \param yIO The new y-coordinate position of the line.
+ * \param forceIO Determines whether to force the update regardless of the line's current content and position.
+ *              Set to true to force the update, false otherwise.
+ *
+ * \note The line to be updated must already exist in the Slave class. If forceIO is set to false, the update
+ *       will only occur if the line's content or position has changed. If forceIO is set to true, the update
+ *       will be performed regardless of the line's current state.
+ *
+ * \return void
+ */
 
 void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
     if (display_state && (!display_button || forceIO)) {
@@ -446,15 +485,11 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
 
             oled_display.display();
             display_updates[yIO - xIO] = contentIO;
-
-            delay(250);
         }
     }
 }
 
 void Slave::loop() {
-    ntpclient.update();
-
     // Dim Display if Time is exceeded.
     if (dimIO.isReady()) {
         setContrast(8);
@@ -480,14 +515,12 @@ void Slave::loop() {
         updateLine(ETH.localIP().toString(), 0, 32, true);
     }
 
-    if (ntpclient.isTimeSet()) {
-        String line_time = "";
+    if (ntpupdateIO.isReady()) {
+        /*if (DateTime.isTimeValid()) {
+            updateLine(DateTime.format(DateFormatter::TIME_ONLY), 0, 48, true);
+        }*/
 
-        line_time += ntpclient.getHours();
-        line_time += ":";
-        line_time += ntpclient.getMinutes();
-
-        updateLine(line_time, 0, 48, true);
+        ntpupdateIO.reset();
     }
 }
 
@@ -508,9 +541,7 @@ void Slave::setDisplayActive() {
     setContrast(128);
 }
 
-void Slave::ntp() {
-    ntpclient.begin();
-}
+
 
 
 

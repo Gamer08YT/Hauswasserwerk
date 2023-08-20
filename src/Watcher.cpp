@@ -12,8 +12,9 @@
 #include "Device.h"
 
 
+TaskHandle_t measurements_task;
 // Timer for Measuring Updates.
-SimpleTimer timerIO(500);
+SimpleTimer timerIO(1500);
 
 // Store Energy Monitor Instance.
 EnergyMonitor monitor;
@@ -27,9 +28,6 @@ bool level_state;
 
 // Store IRMS.
 float irmsIO = 0;
-
-// Store last Update Time.
-unsigned long updatedIO = 0;
 
 float distanceIO, durationIO;
 float percentIO = 0;
@@ -112,7 +110,7 @@ void Watcher::handleConditions() {
 
         // Avoid Ultrasonic Errors.
         //if (percentIO > 0) {
-        refill();
+        //refill();
 
         Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         /**} else {
@@ -139,10 +137,12 @@ void Watcher::loop() {
         // Handle Conditions.
         handleConditions();
 
+        // Handle Measurements.
+        handleMeasurement();
+
         // Reset Timer (Endless Loop).
         timerIO.reset();
     }
-
 }
 
 /**
@@ -168,14 +168,8 @@ float Watcher::getPower() {
  */
 
 void Watcher::handleMeasurement() {
-    // Give Function 1000ms debounce time.
-    if ((millis() - updatedIO) > 1000) {
-        // Calc only IRMS in A.
-        irmsIO = (monitor.calcIrms(1480) / 1000);
-
-        // Update Timestamp.
-        updatedIO = millis();
-    }
+    // Calc only IRMS in A.
+    irmsIO = (monitor.calcIrms(1480) / 1000);
 }
 
 /**
@@ -287,3 +281,16 @@ void Watcher::refill() {
 float Watcher::getDistance() {
     return distanceIO;
 }
+
+/*[[noreturn]] void Watcher::runMeasurements(void *parameter) {
+    while (true) {
+        handleMeasurement();
+        loop();
+        delay(500);
+    }
+}*/
+
+/*void Watcher::setupTask() {
+    // Create new Task for Measurements.
+    xTaskCreate(runMeasurements, "measurements", 10000, NULL, 50, &measurements_task);
+}*/

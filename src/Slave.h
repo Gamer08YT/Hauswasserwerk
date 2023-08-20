@@ -12,7 +12,7 @@ class Slave {
 public:
     static void setup();
 
-    static void setSlave(int idIO, bool stateIO);
+    static void setSlave(int idIO, bool stateIO, int timeIO = 5);
 
     static BasicJsonDocument<DefaultAllocator> getSlave(int idIO);
 
@@ -39,6 +39,8 @@ public:
 
     static void ntp();
 
+    [[noreturn]] static void setupNTPTask();
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 
@@ -47,6 +49,8 @@ private:
     static String getURL(int idIO, char *urlIO);
 
     static void runError(void *parameter);
+
+    [[noreturn]] static void runNTP(void *parameter);
 
     static void setContrast(int valueIO);
 

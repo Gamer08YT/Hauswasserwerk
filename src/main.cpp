@@ -3,11 +3,9 @@
 #include <Arduino.h>
 #include <ArduinoHA.h>
 #include <MQTT.h>
-#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncElegantOTA.h>
 #include <ETH.h>
-#include "SPI.h"
 #include "Watcher.h"
 #include "Network.h"
 #include "Device.h"
@@ -123,6 +121,8 @@ void setupMQTT();
 
 void setupHTTP();
 
+void setupThreads();
+
 /**
  * @brief Initializes the variables and resources required for the setup.
  *
@@ -162,14 +162,14 @@ void setup() {
     // Setup LAN Connection.
     Network::setupLAN();
 
-    // Setup NTP.
-    Slave::ntp();
-
     // Setup Arduino OTA.
     setupOTA();
 
     // Setup HTTP Server.
     setupHTTP();
+
+    // Setup NTP.
+    Slave::ntp();
 
     // Register all Commands.
     Device::addCommands();
@@ -188,6 +188,12 @@ void setup() {
 
     // Setup MQTT.
     setupMQTT();
+
+    // Setup Watcher Task.
+    //Watcher::setupTask();
+
+    // Setup NTP Task.
+    //Slave::setupNTPTask();
 }
 
 void setupHTTP() {
@@ -457,9 +463,6 @@ void loop() {
     // Handle Telnet Stream.
     Device::handleTelnet();
 
-    // Handle Load Metering.
-    Watcher::handleMeasurement();
-
     // Handle Slave Loop.
     Slave::loop();
 
@@ -483,7 +486,7 @@ void loop() {
     }
 
     // Check Ethernet Connection.
-    if(!ETH.linkUp()) {
+    if (!ETH.linkUp()) {
         Slave::setError(true, "Loosed Connection with Ethernet", false, "ETHERNET [X]");
     }
 }

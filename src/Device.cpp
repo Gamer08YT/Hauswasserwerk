@@ -12,6 +12,8 @@
 #include "commands/ClearCommand.h"
 #include "Watcher.h"
 #include "Slave.h"
+#include "commands/FlushCommand.h"
+#include "commands/UnlockCommand.h"
 
 // Store Telnet Instance.
 ESPTelnet telnet;
@@ -165,6 +167,8 @@ void Device::addCommands() {
     Device::addCommand(new ByeCommand());
     Device::addCommand(new ResetCommand());
     Device::addCommand(new ClearCommand());
+    Device::addCommand(new FlushCommand());
+    Device::addCommand(new UnlockCommand());
 }
 
 /**
