@@ -189,9 +189,6 @@ void setup() {
     // Setup MQTT.
     setupMQTT();
 
-    // Setup Watcher Task.
-    //Watcher::setupTask();
-
     // Setup NTP Task.
     //Slave::setupNTPTask();
 }

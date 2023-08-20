@@ -10,6 +10,7 @@
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
 #include "SimpleTimer.h"
+#include "ESPNtpClient.h"
 
 // Store Error Lock.
 bool lockIO = false;
@@ -279,8 +280,6 @@ void Slave::setup() {
         }
     });*/
 
-    /*DateTime.setServer("pool.ntp.org");
-    DateTime.begin();*/
 }
 
 /**
@@ -516,9 +515,7 @@ void Slave::loop() {
     }
 
     if (ntpupdateIO.isReady()) {
-        /*if (DateTime.isTimeValid()) {
-            updateLine(DateTime.format(DateFormatter::TIME_ONLY), 0, 48, true);
-        }*/
+        updateLine(NTP.getTimeStr(), 0, 48, false);
 
         ntpupdateIO.reset();
     }
@@ -541,8 +538,10 @@ void Slave::setDisplayActive() {
     setContrast(128);
 }
 
-
-
+void Slave::ntp() {
+    NTP.setTimeZone(TZ_Europe_Berlin);
+    NTP.begin();
+}
 
 
 

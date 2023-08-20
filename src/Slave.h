@@ -37,9 +37,10 @@ public:
 
     static void loop();
 
-    static void ntp();
 
     [[noreturn]] static void setupNTPTask();
+
+    static void ntp();
 
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
