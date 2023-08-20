@@ -11,6 +11,7 @@
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
 #include "SimpleTimer.h"
+#include "NTPClient.h"
 
 // Store Task Handle for Multithreading Error.
 TaskHandle_t error_task;
@@ -32,6 +33,11 @@ SimpleTimer dimIO(5000);
 
 // Timer for disabling OLED.
 SimpleTimer disableIO(30000);
+
+WiFiUDP udp;
+
+// Store NTPClient Instance.
+NTPClient ntpclient(udp, "pool.ntp.org", 36000, 60000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -289,7 +295,7 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             Device::println(codeIO);
 
             if (!lockIO && flashIO) {
-                xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
+                //xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
             }
 
             lockIO = true;
@@ -309,7 +315,7 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             TaskHandle_t taskIO = xTaskGetHandle("error");
 
             if (taskIO != NULL)
-                vTaskDelete(error_task);
+                //vTaskDelete(error_task);
 
             // Disable Error Lamp...
             digitalWrite(ERROR_LAMP, HIGH);
@@ -447,6 +453,8 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
 }
 
 void Slave::loop() {
+    ntpclient.update();
+
     // Dim Display if Time is exceeded.
     if (dimIO.isReady()) {
         setContrast(8);
@@ -469,7 +477,17 @@ void Slave::loop() {
 
         // Update Display Message.
         infoDisplay("Button", "CLICKED", true);
-        updateLine(ETH.localIP().toString(), 0, 42, true);
+        updateLine(ETH.localIP().toString(), 0, 32, true);
+    }
+
+    if (ntpclient.isTimeSet()) {
+        String line_time = "";
+
+        line_time += ntpclient.getHours();
+        line_time += ":";
+        line_time += ntpclient.getMinutes();
+
+        updateLine(line_time, 0, 48, true);
     }
 }
 
@@ -488,6 +506,10 @@ void Slave::setDisplayActive() {
     display_state = true;
     oled_display.ssd1306_command(SSD1306_DISPLAYON);
     setContrast(128);
+}
+
+void Slave::ntp() {
+    ntpclient.begin();
 }
 
 

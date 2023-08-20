@@ -31,6 +31,8 @@ public:
 
     static int getNormal();
 
+    static float getDistance();
+
 private:
     static void handleConditions();
 

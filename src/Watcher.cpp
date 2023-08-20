@@ -101,8 +101,9 @@ void Watcher::handleConditions() {
             }
 
             // Update Fill Level.
-            Slave::updateLine(String(percentIO), 0, 42);
+            Slave::updateLine(String(percentIO), 0, 32);
         } else {
+            Slave::setPump(true);
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
         }
     } else {
@@ -281,4 +282,8 @@ void Watcher::refill() {
     // Activate Pump1 or Pump2.
     Slave::setSlave(0, true);
     Slave::setSlave(1, true);
+}
+
+float Watcher::getDistance() {
+    return distanceIO;
 }

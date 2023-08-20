@@ -162,6 +162,9 @@ void setup() {
     // Setup LAN Connection.
     Network::setupLAN();
 
+    // Setup NTP.
+    Slave::ntp();
+
     // Setup Arduino OTA.
     setupOTA();
 

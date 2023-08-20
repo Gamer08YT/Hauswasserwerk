@@ -251,6 +251,9 @@ void Device::print_device() {
     Device::println("W");
     Device::print("Level: ");
     Device::print(String(Watcher::getLevelDistance()));
+    Device::println("%");
+    Device::print("Distance: ");
+    Device::print(String(Watcher::getDistance()));
     Device::println("cm");
     Device::print("LSwitch: ");
     Device::println(String(Watcher::getLevelSwitch()));
