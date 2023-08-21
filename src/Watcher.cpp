@@ -29,8 +29,9 @@ bool level_state;
 // Store IRMS.
 float irmsIO = 0;
 
-float distanceIO, durationIO;
-float percentIO = 0;
+int distanceIO = 0;
+float durationIO = 0;
+int percentIO = 0;
 
 /**
  * @brief Getter method for level switch of the Watcher class.
@@ -69,12 +70,12 @@ void Watcher::setup() {
  * Trigger Pump3 if Water is enough.
  */
 void Watcher::handleConditions() {
-    // Check if Level is not Below Min Value.
-    // If True, disallow Pump3.
-    if (percentIO > level_min) {
-        // Check if Level is not Above Max value.
-        // If True, disallow Pump1 and Pump2.
-        if (percentIO < level_max) {
+    // Check if Level is not Above Max value.
+    // If True, disallow Pump1 and Pump2.
+    if (percentIO < level_max && percentIO >= 0) {
+        // Check if Level is not Below Min Value.
+        // If True, disallow Pump3.
+        if (percentIO > level_min) {
             // Reset Error Message.
             Slave::setError(false);
 
@@ -90,33 +91,40 @@ void Watcher::handleConditions() {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "BEREIT");
 
-                // Disable Pump1 or Pump2.
-                Slave::setSlave(0, false);
-                Slave::setSlave(1, false);
+                stopRefill();
 
                 // Allow Pump3 to Pump.
                 Slave::setPump(true);
             }
 
-            // Update Fill Level.
-            Slave::updateLine(String(percentIO), 0, 32);
         } else {
-            Slave::setPump(true);
-            Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
+            // Disallow Pump3 to Pump.
+            Slave::setPump(false);
+
+            // Avoid Ultrasonic Errors.
+            //if (percentIO > 0) {
+            //refill();
+
+            Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         }
     } else {
-        // Disallow Pump3 to Pump.
-        Slave::setPump(false);
+        if(percentIO >=  0) {
+            Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
+            Slave::setPump(true);
+        } else {
+            Slave::setError(true, "Ultraschall Fehler.", true, "Ultraschall [X]");
+            Slave::setPump(false);
+        }
 
-        // Avoid Ultrasonic Errors.
-        //if (percentIO > 0) {
-        //refill();
-
-        Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
-        /**} else {
-            Slave::setError(true, "Ultraschallt fehler.", false, "Ultraschall [X]");
-        }**/
+        stopRefill();
     }
+
+    String fill_line;
+    fill_line += percentIO;
+    fill_line += "%";
+
+    // Update Fill Level.
+    Slave::updateLine(fill_line, 0, 32);
 }
 
 /**
@@ -252,7 +260,7 @@ void Watcher::readUltrasonic() {
     durationIO = pulseIn(LEVEL_ECHO, HIGH);
 
     // Calculate the Distance.
-    distanceIO = (0.017 * durationIO);
+    distanceIO = durationIO * 0.034 / 2;
 
     // Calcualte max Percent.
     percentIO = (100 - (distanceIO * 100) / TANK_HEIGHT);
@@ -280,6 +288,12 @@ void Watcher::refill() {
 
 float Watcher::getDistance() {
     return distanceIO;
+}
+
+void Watcher::stopRefill() {
+    // Disable Pump1 or Pump2.
+    Slave::setSlave(0, false);
+    Slave::setSlave(1, false);
 }
 
 /*[[noreturn]] void Watcher::runMeasurements(void *parameter) {

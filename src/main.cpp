@@ -105,6 +105,9 @@ HASwitch smart("water_smart");
 // Store Buffer Tank Level.
 HASensorNumber buffer("water_buffer", HABaseDeviceType::PrecisionP0);
 
+// Store Buffer Level Distance.
+HASensorNumber distance("water_distance", HABaseDeviceType::PrecisionP0);
+
 // Store Power Usage of Pump3.
 HASensorNumber power("water_load", HABaseDeviceType::PrecisionP2);
 
@@ -470,6 +473,7 @@ void loop() {
 
         // Set Level Height.{
         buffer.setValue(Watcher::getLevelDistance());
+        distance.setValue(Watcher::getDistance());
 
         // Set Error Message.
         errorIO.setValue(Slave::getError().c_str());

@@ -28,10 +28,10 @@ bool display_button = false;
 SimpleTimer dimIO(5000);
 
 // Timer for NTP Update.
-SimpleTimer ntpupdateIO(1000);
+SimpleTimer ntpupdateIO(30000);
 
 // Timer for disabling OLED.
-SimpleTimer disableIO(30000);
+SimpleTimer disableIO(60000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -99,7 +99,7 @@ void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
             contentIO += timeIO;
             contentIO += R"(, "on": true})";
 
-            sendPost(idIO, "Switch.Set", contentIO);
+            //sendPost(idIO, "Switch.Set", contentIO);
         } else {
             Device::println("PUMP1 and PUMP2 Locked!");
         }
@@ -333,13 +333,13 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             error_message = "";
 
             // Get Task by Handle.
-            TaskHandle_t taskIO = xTaskGetHandle("error");
+            /*TaskHandle_t taskIO = xTaskGetHandle("error");
 
             if (taskIO != NULL)
                 //vTaskDelete(error_task);
 
                 // Disable Error Lamp...
-                digitalWrite(ERROR_LAMP, HIGH);
+                digitalWrite(ERROR_LAMP, HIGH);*/
         }
     }
 }
@@ -450,6 +450,8 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
 
             // Reset Updates Array.
             std::fill_n(display_updates, sizeof(display_updates), 0);
+            delay(250);
+            Wire.flush();
         }
     }
 }
@@ -478,12 +480,15 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
             // Override Line.
             oled_display.fillRect(xIO, yIO, 128, 14, BLACK);
             oled_display.setCursor(xIO, yIO);
+            oled_display.display();
 
             // Print new Data.
             oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
 
             oled_display.display();
             display_updates[yIO - xIO] = contentIO;
+            delay(250);
+            Wire.flush();
         }
     }
 }
@@ -498,7 +503,7 @@ void Slave::loop() {
     // Disable OLED.
     if (disableIO.isReady()) {
         display_state = false;
-        oled_display.clearDisplay();
+        //oled_display.clearDisplay();
         oled_display.ssd1306_command(SSD1306_DISPLAYOFF);
     }
 
@@ -510,12 +515,12 @@ void Slave::loop() {
         setDisplayActive();
 
         // Update Display Message.
-        infoDisplay("Button", "CLICKED", true);
-        updateLine(ETH.localIP().toString(), 0, 32, true);
+        //infoDisplay("Button", "CLICKED", true);
+        //updateLine(ETH.localIP().toString(), 0, 32, true);
     }
 
     if (ntpupdateIO.isReady()) {
-        updateLine(NTP.getTimeStr(), 0, 48, false);
+        //updateLine(NTP.getTimeStr(), 0, 48, false);
 
         ntpupdateIO.reset();
     }

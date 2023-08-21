@@ -47,6 +47,8 @@ private:
     static bool allowPressure;
 
     static void refill();
+
+    static void stopRefill();
 };
 
 
