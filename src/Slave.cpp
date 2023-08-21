@@ -33,6 +33,9 @@ SimpleTimer ntpupdateIO(30000);
 // Timer for disabling OLED.
 SimpleTimer disableIO(60000);
 
+// Handle Shelly Check Timer.
+SimpleTimer shellyupdate(15000);
+
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
@@ -507,6 +510,12 @@ void Slave::loop() {
         oled_display.ssd1306_command(SSD1306_DISPLAYOFF);
     }
 
+    // Check if Pump is realy Active.
+    if (shellyupdate.isReady()) {
+        checkSlaveState(0);
+        checkSlaveState(1);
+    }
+
     // Read Unlock Button.
     display_button = !digitalRead(UNLOCK_BUTTON);
 
@@ -546,6 +555,20 @@ void Slave::setDisplayActive() {
 void Slave::ntp() {
     NTP.setTimeZone(TZ_Europe_Berlin);
     NTP.begin();
+}
+
+void Slave::checkSlaveState(int idIO) {
+    float slave = Slave::getPower(idIO);
+
+    // Error when Shelly / Pump not pumps.
+    if (states[idIO] && slave < MIN_SLAVE_POWER) {
+        setError(true, "Slave is empty.", false, "Slave [E]");
+    }
+
+    // Error when Shelly Contactor not closing.
+    if (!states[idIO] && slave > MAX_SLAVE_DISABLED) {
+        setError(true, "Slave has glued Contacts.", false, "Slave [C]");
+    }
 }
 
 

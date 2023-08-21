@@ -56,6 +56,8 @@ private:
     static void setContrast(int valueIO);
 
     static void setDisplayActive();
+
+    static void checkSlaveState(int idIO);
 };
 
 
