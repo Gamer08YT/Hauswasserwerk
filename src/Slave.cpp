@@ -453,7 +453,6 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
 
             // Reset Updates Array.
             std::fill_n(display_updates, sizeof(display_updates), 0);
-            delay(250);
             Wire.flush();
         }
     }
@@ -490,7 +489,6 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
 
             oled_display.display();
             display_updates[yIO - xIO] = contentIO;
-            delay(250);
             Wire.flush();
         }
     }

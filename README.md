@@ -12,6 +12,9 @@ bereitgestellt.
 
 ## Todos:
 
+STOP CHECKING SHELLY EVERY 15 SECONDS...
+CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
+
 - Telnet Server ✅
 - Automatische Befüllung des Pufferspeichers. ✅
 - Automatische Befüllung nach Vorrang.

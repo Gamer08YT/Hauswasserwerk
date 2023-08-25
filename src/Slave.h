@@ -42,14 +42,14 @@ public:
 
     static void ntp();
 
+    static void runError(void *parameter);
+
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendPost(int idIO, char *urlIO, String dataIO);
 
     static String getURL(int idIO, char *urlIO);
-
-    static void runError(void *parameter);
 
     [[noreturn]] static void runNTP(void *parameter);
 

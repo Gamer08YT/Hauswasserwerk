@@ -296,14 +296,6 @@ void Watcher::stopRefill() {
     Slave::setSlave(1, false);
 }
 
-/*[[noreturn]] void Watcher::runMeasurements(void *parameter) {
-    while (true) {
-        handleMeasurement();
-        loop();
-        delay(500);
-    }
-}*/
-
 /*void Watcher::setupTask() {
     // Create new Task for Measurements.
     xTaskCreate(runMeasurements, "measurements", 10000, NULL, 50, &measurements_task);
