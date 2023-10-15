@@ -14,7 +14,7 @@
 
 TaskHandle_t measurements_task;
 // Timer for Measuring Updates.
-SimpleTimer timerIO(1500);
+SimpleTimer timerIO(2500);
 
 // Store Energy Monitor Instance.
 EnergyMonitor monitor;
@@ -57,9 +57,9 @@ bool Watcher::getLevelSwitch() {
 
 void Watcher::setup() {
     pinMode(LEVEL_SWITCH, INPUT);
-    pinMode(LEVEL_ECHO, INPUT);
+    pinMode(LEVEL_FILL, INPUT);
     pinMode(METER, INPUT);
-    pinMode(LEVEL_TRIGGER, OUTPUT);
+    pinMode(LEVEL_ALARM, INPUT);
 
     // Setup Monitor.
     monitor.current(METER, 25);
@@ -108,9 +108,9 @@ void Watcher::handleConditions() {
             Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         }
     } else {
-        if(percentIO >=  0) {
+        if (percentIO >= 0) {
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
-            Slave::setPump(true);
+            Slave::setPump(true, true);
         } else {
             Slave::setError(true, "Ultraschall Fehler.", true, "Ultraschall [X]");
             Slave::setPump(false);
@@ -251,19 +251,11 @@ int Watcher::getNormal() {
 }
 
 void Watcher::readUltrasonic() {
-    // Generate Trigger Signal.
-    digitalWrite(LEVEL_TRIGGER, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(LEVEL_TRIGGER, LOW);
-
-    // Measure Duration between ECHO Pin.
-    durationIO = pulseIn(LEVEL_ECHO, HIGH);
-
     // Calculate the Distance.
-    distanceIO = durationIO * 0.034 / 2;
+    distanceIO = analogRead(LEVEL_FILL);
 
     // Calcualte max Percent.
-    percentIO = (100 - (distanceIO * 100) / TANK_HEIGHT);
+    percentIO = distanceIO;//(100 - (distanceIO * 100) / TANK_HEIGHT);
 }
 
 /**

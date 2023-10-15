@@ -219,11 +219,11 @@ String Slave::getURL(int idIO, char *urlIO) {
     return string;
 }
 
-void Slave::setPump(bool stateIO) {
+void Slave::setPump(bool stateIO, bool forceIO) {
     if (!stateIO) {
         digitalWrite(PUMP_3, HIGH);
     } else {
-        if (!lockIO) {
+        if (!lockIO || forceIO) {
             digitalWrite(PUMP_3, LOW);
         } /*else
             Device::println("PUMP3 Locked!");*/

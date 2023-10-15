@@ -59,5 +59,31 @@ graph TD
 2. Pumpe einschalten
 3. Pumpe abschalten
 
+## Flashen
+
+GND —>    GND
+
+TX —>    RX0 (nicht RXD!)
+
+RX —>    TX0 (nicht TXD!)
+
+5V —>    5V
+
+GND -> IO0
+
 ## Pinout
+
 ![](assets/img/pinout.png)
+
+Note 1: The module enables high levels by default.
+
+Note 2: 3V3 and 5V power supply, the two can only choose one ！！！
+
+Note 3: IO39, IO35 and IO36, only supports inp
+
+#### Debugging:
+
+Remove Sensor Data:
+apk add --no-cache sqlite
+sqlite3 home-assistant_v2.db
+`DELETE FROM states WHERE entity_id="sensor.wasserwerk_fullstand_puffer";`

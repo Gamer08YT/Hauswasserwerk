@@ -7,13 +7,14 @@
 
 #define ERROR_LAMP 14
 #define PUMP_3 15
-#define LEVEL_SWITCH 12
-#define LEVEL_ECHO 36
-#define LEVEL_TRIGGER 4
+#define LEVEL_SWITCH 35
+#define LEVEL_FILL 36
+#define LEVEL_ALARM 4
 #define METER 39
 #define WATER 35
-// Tank Height + Sensor Offset of 20 cm = 54cm + 20cm.
-#define TANK_HEIGHT 74
+// Tank Height + Sensor Offset of 20 cm = 54cm + 30cm.
+#define TANK_HEIGHT 54
+#define BUCKET_HEIGHT 25
 #define UNLOCK_BUTTON 2
 #define SDA 5
 #define SCL 17

@@ -80,7 +80,7 @@ HADevice device;
 WiFiClient client;
 
 // Define Home Assistant MQTT Instance.
-HAMqtt mqtt(client, device, 13);
+HAMqtt mqtt(client, device, 14);
 
 // Store Refill Trigger.
 HANumber minIO("water_min", HABaseDeviceType::PrecisionP0);
@@ -91,6 +91,7 @@ HANumber normalIO("water_normal", HABaseDeviceType::PrecisionP0);
 HABinarySensor pump1("water_pump1");
 HABinarySensor pump2("water_pump2");
 HABinarySensor pump3("water_pump3");
+HABinarySensor maxSwitch("water_max");
 
 // Store Mixing Values.
 HANumber mix1("water_mix1");
@@ -175,10 +176,10 @@ void setup() {
     Slave::ntp();
 
     // Register all Commands.
-    Device::addCommands();
+    //Device::addCommands();
 
     // Setup Telnet Server.
-    Device::beginTelnet();
+    //Device::beginTelnet();
 
     // Wait for a short Period.
     delay(250);
@@ -361,6 +362,10 @@ void setupHA() {
     pump3.setCurrentState(false);
     pump3.setIcon("mdi:water-pump");
 
+    // Prepare Max Level Switch.
+    maxSwitch.setName("Überlauf");
+    maxSwitch.setCurrentState(false);
+
     // Prepare Mix 1
     mix1.setName("Misch. Brunnen");
     mix1.setMax(100);
@@ -387,6 +392,10 @@ void setupHA() {
     buffer.setName("Füllstand Puffer");
     buffer.setIcon("mdi:duck");
     buffer.setUnitOfMeasurement("%");
+
+    // Prepare TL136 Value.
+    distance.setName("TL136");
+    distance.setUnitOfMeasurement("V");
 
     // Prepare Power.
     power.setName("Druckspeicher Power");
@@ -461,7 +470,7 @@ void loop() {
     Watcher::loop();
 
     // Handle Telnet Stream.
-    Device::handleTelnet();
+    //Device::handleTelnet();
 
     // Handle Slave Loop.
     Slave::loop();
@@ -481,6 +490,8 @@ void loop() {
         pump1.setState(Slave::getState(0));
         pump2.setState(Slave::getState(1));
         pump3.setState(Slave::getState(2));
+
+        maxSwitch.setCurrentState(Watcher::getLevelSwitch());
 
         // Reset Timer State.
         updateIO.reset();
