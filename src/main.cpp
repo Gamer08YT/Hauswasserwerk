@@ -150,6 +150,9 @@ void setup() {
     // Begin Serial Console.
     Serial.begin(115200);
 
+    // Print Serial Start.
+    Serial.println("Starting.");
+
     // Setup Pins.
     Watcher::setup();
     Slave::setup();

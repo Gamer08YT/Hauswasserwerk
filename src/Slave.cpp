@@ -261,28 +261,28 @@ void Slave::setup() {
     // Display Setup.
     if (!oled_display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         setError(true, "Display Error");
+    } else {
+
+        // Set Default Size and disable Wrap.
+        oled_display.setTextSize(1.5);
+        oled_display.setTextColor(WHITE);
+        oled_display.ssd1306_command(SSD1306_SETPRECHARGE);
+        oled_display.ssd1306_command(17);
+
+        // On NTP Event.
+        /*NTP.onNTPSyncEvent([](NTPSyncEvent_t errorIO) {
+            if (errorIO) {
+                Serial.print("Time Sync error: ");
+                if (errorIO == noResponse)
+                    Slave::infoDisplay("NTP", "CONNECTION ERROR");
+                else if (errorIO == invalidAddress)
+                    Slave::infoDisplay("NTP", "INVALID ADDRESS");
+            } else {
+                Serial.print("Got NTP time: ");
+                Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
+            }
+        });*/
     }
-
-    // Set Default Size and disable Wrap.
-    oled_display.setTextSize(1.5);
-    oled_display.setTextColor(WHITE);
-    oled_display.ssd1306_command(SSD1306_SETPRECHARGE);
-    oled_display.ssd1306_command(17);
-
-    // On NTP Event.
-    /*NTP.onNTPSyncEvent([](NTPSyncEvent_t errorIO) {
-        if (errorIO) {
-            Serial.print("Time Sync error: ");
-            if (errorIO == noResponse)
-                Slave::infoDisplay("NTP", "CONNECTION ERROR");
-            else if (errorIO == invalidAddress)
-                Slave::infoDisplay("NTP", "INVALID ADDRESS");
-        } else {
-            Serial.print("Got NTP time: ");
-            Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
-        }
-    });*/
-
 }
 
 /**
