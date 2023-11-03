@@ -24,13 +24,10 @@ int level_min = 30;
 int level_max = 80;
 int level_normal = 50;
 
-bool level_state;
-
 // Store IRMS.
 float irmsIO = 0;
 
-int distanceIO = 0;
-float durationIO = 0;
+float distanceIO = 0;
 int percentIO = 0;
 
 float voltage_max = 1.90;
@@ -143,7 +140,7 @@ void Watcher::loop() {
     // Read Ultrasonic Sensor.
     if (timerIO.isReady()) {
         // Read Ultrasonic Sensor.
-        readUltrasonic();
+        readCurrent();
 
         // Handle Conditions.
         handleConditions();
@@ -193,11 +190,8 @@ void Watcher::handleMeasurement() {
  */
 
 void Watcher::setMax(int valueIO) {
-    if (valueIO < 85) {
+    if (valueIO <= 85) {
         level_max = valueIO;
-
-        Device::println("Set Max Level Value to ");
-        Device::println(String(valueIO));
     }
 
 }
@@ -213,11 +207,8 @@ void Watcher::setMax(int valueIO) {
  */
 
 void Watcher::setMin(int valueIO) {
-    if (valueIO > 25) {
+    if (valueIO >= 25) {
         level_min = valueIO;
-
-        Device::println("Set Min Level Value to ");
-        Device::println(String(valueIO));
     }
 }
 
@@ -235,9 +226,6 @@ void Watcher::setMin(int valueIO) {
 void Watcher::setNormal(int valueIO) {
     if (valueIO > level_min && valueIO < level_max) {
         level_normal = valueIO;
-
-        Device::println("Set Normal Level Value to ");
-        Device::println(String(valueIO));
     }
 }
 
@@ -253,9 +241,26 @@ int Watcher::getNormal() {
     return level_normal;
 }
 
-void Watcher::readUltrasonic() {
-    // Calculate the Distance.
-    distanceIO = analogRead(LEVEL_FILL) * (3.3 / 4095.0);
+
+/**
+* @brief Reads the current analog input value and calculates the distance and percentage based on the measured value.
+*
+* This function reads 10 analog input values from the LEVEL_FILL pin to calculate an average. It then converts
+* the average from millivolts to volts and stores it in the distanceIO variable.
+* The rangeIO is calculated based on the maximum and minimum voltage values.
+* The positionIO is calculated as the difference between distanceIO and voltage_min.
+* Finally, the percentIO variable is updated with the percentage value based on the positionIO and rangeIO.
+*/
+void Watcher::readCurrent() {
+    float averageIO = 0;
+
+    // Read 10 Values to calculate Average.
+    for (float counter = 0; counter < 5; counter++) {
+        averageIO = averageIO + analogReadMilliVolts(LEVEL_FILL);
+    }
+
+    // Calculate the Distance (mV to V).
+    distanceIO = ((averageIO / 5) / 1000.0);
 
     // Calculate Range.
     double rangeIO = voltage_max - voltage_min;
@@ -281,6 +286,11 @@ float Watcher::getLevelDistance() {
     return percentIO;
 }
 
+/**
+ * @brief Refills the water tank by activating Pump1 or Pump2.
+ *
+ * This function activates either Pump1 or Pump2 to refill the water tank.
+ */
 void Watcher::refill() {
     // Activate Pump1 or Pump2.
     Slave::setSlave(0, true);

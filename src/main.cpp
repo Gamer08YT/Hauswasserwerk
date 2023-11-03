@@ -80,7 +80,7 @@ HADevice device;
 WiFiClient client;
 
 // Define Home Assistant MQTT Instance.
-HAMqtt mqtt(client, device, 14);
+HAMqtt mqtt(client, device, 15);
 
 // Store Refill Trigger.
 HANumber minIO("water_min", HABaseDeviceType::PrecisionP0);
@@ -95,11 +95,10 @@ HABinarySensor maxSwitch("water_max");
 
 // Store Mixing Values.
 HANumber mix1("water_mix1");
-HANumber mix2("water_mix2");
 
 // Store Voltage Calibration.
-HANumber minVoltage("water_minV");
-HANumber maxVoltage("water_maxV");
+HANumber minVoltage("water_minV", HABaseDeviceType::PrecisionP2);
+HANumber maxVoltage("water_maxV", HABaseDeviceType::PrecisionP2);
 
 
 // Store Error Message.
@@ -112,7 +111,7 @@ HASwitch smart("water_smart");
 HASensorNumber buffer("water_buffer", HABaseDeviceType::PrecisionP0);
 
 // Store Buffer Level Distance.
-HASensorNumber voltage("water_voltage", HABaseDeviceType::PrecisionP0);
+HASensorNumber voltage("water_voltage", HABaseDeviceType::PrecisionP2);
 
 // Store Power Usage of Pump3.
 HASensorNumber power("water_load", HABaseDeviceType::PrecisionP2);
@@ -120,17 +119,11 @@ HASensorNumber power("water_load", HABaseDeviceType::PrecisionP2);
 
 void setupOTA();
 
-void handleOTA();
-
-void handleWeb();
-
 void setupHA();
 
 void setupMQTT();
 
 void setupHTTP();
-
-void setupThreads();
 
 /**
  * @brief Initializes the variables and resources required for the setup.
@@ -327,33 +320,33 @@ void setupHA() {
 
     // Prepare Min Trigger.
     // Define min Level to refill.
-    minIO.setMax(85);
+    minIO.setMax(50);
     minIO.setMin(25);
     minIO.setName("Minimal");
+    minIO.onCommand(MQTT::onMin);
     minIO.setUnitOfMeasurement("%");
     minIO.setMode(HANumber::ModeBox);
     minIO.setRetain(true);
-    maxIO.onCommand(MQTT::onMin);
 
     // Prepare Normal Trigger.
     // Define normal Level to refill (when it's Rain and Cistern is getting to full Tank is getting filled to Max Value).
     normalIO.setMax(85);
     normalIO.setMin(25);
     normalIO.setName("Normal");
+    normalIO.onCommand(MQTT::onNormal);
     normalIO.setUnitOfMeasurement("%");
     normalIO.setMode(HANumber::ModeBox);
     normalIO.setRetain(true);
-    maxIO.onCommand(MQTT::onNormal);
 
     // Prepare Max Trigger.
     // Max Value for example in Emergency Situation.
     maxIO.setMax(85);
     maxIO.setMin(25);
     maxIO.setName("Maximal");
+    maxIO.onCommand(MQTT::onMax);
     maxIO.setUnitOfMeasurement("%");
     maxIO.setMode(HANumber::ModeBox);
     maxIO.setRetain(true);
-    maxIO.onCommand(MQTT::onMax);
 
     // Prepare Pump 1
     pump1.setName("Brunnen");
@@ -375,29 +368,25 @@ void setupHA() {
     maxSwitch.setCurrentState(false);
 
     // Prepare Mix 1
-    mix1.setName("Misch. Brunnen");
+    mix1.setName("Misch. Brunnen / Zisterne");
     mix1.setMax(100);
     mix1.setMin(10);
-    mix1.setMode(HANumber::ModeBox);
+    mix1.setMode(HANumber::ModeSlider);
     mix1.setUnitOfMeasurement("%");
     mix1.setRetain(true);
-
-    // Prepare Mix 2
-    mix2.setName("Misch. Zisterne");
-    mix2.setMax(100);
-    mix2.setMax(10);
-    mix2.setMode(HANumber::ModeBox);
-    mix2.setUnitOfMeasurement("%");
-    mix2.setRetain(true);
 
     // Prepare Fields for Voltage Calibrations.
     minVoltage.setRetain(true);
     minVoltage.onCommand(MQTT::minV);
-    minVoltage.setName("Min VolVtage");
+    minVoltage.setUnitOfMeasurement("V");
+    minVoltage.setName("Min Voltage");
+    minVoltage.setMode(HANumber::ModeBox);
 
     maxVoltage.setRetain(true);
     maxVoltage.onCommand(MQTT::maxV);
     maxVoltage.setName("Max Voltage");
+    maxVoltage.setUnitOfMeasurement("V");
+    maxVoltage.setMode(HANumber::ModeBox);
 
 
     // Prepare Smart Mode

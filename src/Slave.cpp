@@ -102,12 +102,12 @@ void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
             contentIO += timeIO;
             contentIO += R"(, "on": true})";
 
-            //sendPost(idIO, "Switch.Set", contentIO);
+            sendPost(idIO, "Switch.Set", contentIO);
         } else {
             Device::println("PUMP1 and PUMP2 Locked!");
         }
     } else {
-        //sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
+        sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
     }
 
     // Set State Boolean.
@@ -405,6 +405,7 @@ bool Slave::getState(int idIO) {
     return states[idIO];
 }
 
+/*
 void Slave::setDisplay(String messageIO) {
     // Avoid to much Calculation.
     if (messageIO != display_message) {
@@ -416,6 +417,7 @@ void Slave::setDisplay(String messageIO) {
         display_message = messageIO;
     }
 }
+*/
 
 void Slave::showBootscreen() {
     // Show initial display buffer contents on the screen --

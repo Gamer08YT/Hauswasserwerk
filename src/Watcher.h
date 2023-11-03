@@ -33,10 +33,6 @@ public:
 
     static float getDistance();
 
-    [[noreturn]] static void runMeasurements(void *parameter);
-
-    static void setupTask();
-
     static void setMinV(float aFloat);
 
     static void setMaxV(float aFloat);
@@ -44,11 +40,7 @@ public:
 private:
     static void handleConditions();
 
-    static void readUltrasonic();
-
-    static bool allowFilling;
-
-    static bool allowPressure;
+    static void readCurrent();
 
     static void refill();
 
