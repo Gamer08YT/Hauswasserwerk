@@ -396,7 +396,7 @@ void setupHA() {
     minVoltage.setName("Min VolVtage");
 
     maxVoltage.setRetain(true);
-    maxVoltage.onCommand(MQTT::maxV)
+    maxVoltage.onCommand(MQTT::maxV);
     maxVoltage.setName("Max Voltage");
 
 

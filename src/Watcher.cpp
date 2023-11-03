@@ -33,6 +33,9 @@ int distanceIO = 0;
 float durationIO = 0;
 int percentIO = 0;
 
+float voltage_max = 1.90;
+float voltage_min = 0.90;
+
 /**
  * @brief Getter method for level switch of the Watcher class.
  *
@@ -254,8 +257,14 @@ void Watcher::readUltrasonic() {
     // Calculate the Distance.
     distanceIO = analogRead(LEVEL_FILL) * (3.3 / 4095.0);
 
-    // Calcualte max Percent.
-    percentIO = distanceIO;//(100 - (distanceIO * 100) / TANK_HEIGHT);
+    // Calculate Range.
+    double rangeIO = voltage_max - voltage_min;
+
+    // Calculate Position with Offset.
+    double positionIO = distanceIO - voltage_min;
+
+    // Calculate max Percent.
+    percentIO = (positionIO / rangeIO) * 100;
 }
 
 /**
@@ -286,6 +295,14 @@ void Watcher::stopRefill() {
     // Disable Pump1 or Pump2.
     Slave::setSlave(0, false);
     Slave::setSlave(1, false);
+}
+
+void Watcher::setMinV(float voltageIO) {
+    voltage_min = voltageIO;
+}
+
+void Watcher::setMaxV(float voltageIO) {
+    voltage_max = voltageIO;
 }
 
 /*void Watcher::setupTask() {

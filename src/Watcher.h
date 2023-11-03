@@ -37,6 +37,10 @@ public:
 
     static void setupTask();
 
+    static void setMinV(float aFloat);
+
+    static void setMaxV(float aFloat);
+
 private:
     static void handleConditions();
 
