@@ -37,9 +37,6 @@ public:
 
     static void loop();
 
-
-    [[noreturn]] static void setupNTPTask();
-
     static void ntp();
 
     static void runError(void *parameter);
@@ -50,8 +47,6 @@ private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendPost(int idIO, char *urlIO, String dataIO);
 
     static String getURL(int idIO, char *urlIO);
-
-    [[noreturn]] static void runNTP(void *parameter);
 
     static void setContrast(int valueIO);
 

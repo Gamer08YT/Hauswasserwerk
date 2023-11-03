@@ -97,6 +97,11 @@ HABinarySensor maxSwitch("water_max");
 HANumber mix1("water_mix1");
 HANumber mix2("water_mix2");
 
+// Store Voltage Calibration.
+HANumber minVoltage("water_minV");
+HANumber maxVoltage("water_maxV");
+
+
 // Store Error Message.
 HASensor errorIO("water_error");
 
@@ -107,7 +112,7 @@ HASwitch smart("water_smart");
 HASensorNumber buffer("water_buffer", HABaseDeviceType::PrecisionP0);
 
 // Store Buffer Level Distance.
-HASensorNumber distance("water_distance", HABaseDeviceType::PrecisionP0);
+HASensorNumber voltage("water_voltage", HABaseDeviceType::PrecisionP0);
 
 // Store Power Usage of Pump3.
 HASensorNumber power("water_load", HABaseDeviceType::PrecisionP2);
@@ -385,6 +390,16 @@ void setupHA() {
     mix2.setUnitOfMeasurement("%");
     mix2.setRetain(true);
 
+    // Prepare Fields for Voltage Calibrations.
+    minVoltage.setRetain(true);
+    minVoltage.onCommand(MQTT::minV);
+    minVoltage.setName("Min VolVtage");
+
+    maxVoltage.setRetain(true);
+    maxVoltage.onCommand(MQTT::maxV)
+    maxVoltage.setName("Max Voltage");
+
+
     // Prepare Smart Mode
     smart.setIcon("mdi:eye-check");
     smart.setName("Smart Modus");
@@ -397,8 +412,8 @@ void setupHA() {
     buffer.setUnitOfMeasurement("%");
 
     // Prepare TL136 Value.
-    distance.setName("TL136");
-    distance.setUnitOfMeasurement("V");
+    voltage.setName("TL136");
+    voltage.setUnitOfMeasurement("V");
 
     // Prepare Power.
     power.setName("Druckspeicher Power");
@@ -485,7 +500,7 @@ void loop() {
 
         // Set Level Height.{
         buffer.setValue(Watcher::getLevelDistance());
-        distance.setValue(Watcher::getDistance());
+        voltage.setValue(Watcher::getDistance());
 
         // Set Error Message.
         errorIO.setValue(Slave::getError().c_str());

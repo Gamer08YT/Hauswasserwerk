@@ -30,3 +30,11 @@ void MQTT::onMin(HANumeric numberIO, HANumber *sender) {
 
     sender->setState(Watcher::getMin());
 }
+
+void MQTT::minV(HANumeric, HANumber *) {
+
+}
+
+void MQTT::maxV(HANumeric, HANumber *) {
+
+}

@@ -252,7 +252,7 @@ int Watcher::getNormal() {
 
 void Watcher::readUltrasonic() {
     // Calculate the Distance.
-    distanceIO = analogRead(LEVEL_FILL);
+    distanceIO = analogRead(LEVEL_FILL) * (3.3 / 4095.0);
 
     // Calcualte max Percent.
     percentIO = distanceIO;//(100 - (distanceIO * 100) / TANK_HEIGHT);

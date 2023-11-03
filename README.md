@@ -22,8 +22,9 @@ CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
 - Fehlermeldung (Anhand Leistungsaufnahme)
 - Füllstandüberwachung (Ultraschall) ✅
 - Wassermelder
-- PUSH Benachrichtigungen
+- PUSH Benachrichtigungen* ✅
 
+*Via HA
 ## Struktur:
 
 ```mermaid
@@ -79,7 +80,7 @@ Note 1: The module enables high levels by default.
 
 Note 2: 3V3 and 5V power supply, the two can only choose one ！！！
 
-Note 3: IO39, IO35 and IO36, only supports inp
+Note 3: IO39, IO35 and IO36, only supports input.
 
 #### Debugging:
 

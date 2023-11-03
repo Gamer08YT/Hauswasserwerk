@@ -20,6 +20,10 @@ public:
     static void onNormal(HANumeric, HANumber *);
 
     static void onMin(HANumeric, HANumber *);
+
+    static void minV(HANumeric, HANumber *);
+
+    static void maxV(HANumeric, HANumber *);
 };
 
 
