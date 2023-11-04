@@ -12,7 +12,7 @@ class Slave {
 public:
     static void setup();
 
-    static void setSlave(int idIO, bool stateIO, int timeIO = 5);
+    static void setSlave(int idIO, bool stateIO, int timeIO = 10);
 
     static BasicJsonDocument<DefaultAllocator> getSlave(int idIO);
 

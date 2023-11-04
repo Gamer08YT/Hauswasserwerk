@@ -69,20 +69,38 @@ void Watcher::setup() {
 }
 
 /**
- * Trigger Pump1 + Pump2, if Water Level is below Normal Value.
- * Trigger Pump3 if Water is enough.
+ * @brief Handles the conditions and controls the pumps based on the water level.
+ *
+ * This function is responsible for checking the water level conditions and controlling the pumps accordingly. It checks if the water level is within the acceptable range and takes appropriate
+* actions. It also updates the display with the current fill state and updates the fill level.
  */
 void Watcher::handleConditions() {
     // Check if Level is not Above Max value.
     // If True, disallow Pump1 and Pump2.
     if (percentIO < level_max && percentIO >= 0) {
+
         // Check if Level is not Below Min Value.
         // If True, disallow Pump3.
         if (percentIO > level_min) {
+
             // Reset Error Message.
             Slave::setError(false);
 
-            if (percentIO < level_normal) {
+            if (fillIO) {
+                if (percentIO >= (level_max - 5)) {
+                    // Update Display Fill-state.
+                    Slave::infoDisplay("Füllstand:", "BEREIT");
+
+                    // Stop Pump 1 - 2;
+                    stopRefill();
+
+                    // Set State of Process.
+                    fillIO = false;
+                } else {
+                    // Start Pump 1 - 2;
+                    refill();
+                }
+            } else if (percentIO < level_normal) {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "FÜLLEN...");
 
@@ -91,30 +109,13 @@ void Watcher::handleConditions() {
 
                 // Start Pump 1 - 2;
                 refill();
-
-                // Disallow Pump3 to Pump.
-                Slave::setPump(false);
-            } else if (percentIO > (level_normal + 10) && fillIO) {
-                // Update Display Fill-state.
-                Slave::infoDisplay("Füllstand:", "BEREIT");
-
-                // Stop Pump 1 - 2;
-                stopRefill();
-
-                // Set State of Process.
-                fillIO = false;
-
-                // Allow Pump3 to Pump.
-                Slave::setPump(true);
             }
 
+            // Allow Pump3 to Pump.
+            Slave::setPump(true);
         } else {
             // Disallow Pump3 to Pump.
             Slave::setPump(false);
-
-            // Avoid Ultrasonic Errors.
-            //if (percentIO > 0) {
-            //refill();
 
             Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         }

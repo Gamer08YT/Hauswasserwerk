@@ -227,17 +227,10 @@ void Slave::setPump(bool stateIO, bool forceIO) {
     } else {
         if (!lockIO || forceIO) {
             digitalWrite(PUMP_3, LOW);
-        } /*else
-            Device::println("PUMP3 Locked!");*/
+        }
     }
 
     states[2] = stateIO;
-
-    /*if (!lockIO || !stateIO) {
-        // Print Debug Message.
-        Serial.print("Changing PUMP3 to ");
-        Serial.println(String(stateIO));
-    }*/
 }
 
 /**

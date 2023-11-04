@@ -249,7 +249,7 @@ void setupHA() {
 
     // Prepare for Home Assistant.
     device.setName("Wasserwerk");
-    device.setSoftwareVersion("1.1.0");
+    device.setSoftwareVersion("1.1.1");
     device.setModel("ESP32");
     device.setManufacturer("Jan Heil (www.byte-store.de)");
     device.enableSharedAvailability();
