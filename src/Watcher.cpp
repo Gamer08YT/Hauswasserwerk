@@ -14,7 +14,7 @@
 
 TaskHandle_t measurements_task;
 // Timer for Measuring Updates.
-SimpleTimer timerIO(2500);
+SimpleTimer timerIO(1000);
 
 // Store Energy Monitor Instance.
 EnergyMonitor monitor;
@@ -32,6 +32,9 @@ int percentIO = 0;
 
 float voltage_max = 1.90;
 float voltage_min = 0.90;
+
+bool fillIO = false;
+
 
 /**
  * @brief Getter method for level switch of the Watcher class.
@@ -83,15 +86,23 @@ void Watcher::handleConditions() {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "FÜLLEN...");
 
+                // Set State of Process.
+                fillIO = true;
+
+                // Start Pump 1 - 2;
                 refill();
 
                 // Disallow Pump3 to Pump.
                 Slave::setPump(false);
-            } else {
+            } else if (percentIO > (level_normal + 10) && fillIO) {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "BEREIT");
 
+                // Stop Pump 1 - 2;
                 stopRefill();
+
+                // Set State of Process.
+                fillIO = false;
 
                 // Allow Pump3 to Pump.
                 Slave::setPump(true);

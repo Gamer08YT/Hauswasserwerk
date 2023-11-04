@@ -71,6 +71,8 @@ const unsigned char logo[] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 /**
  * @file
  * @brief Declaration of the devices variable.
+ * @see pump0 => pump1 => Brunnen
+ * @see pump1 => pump2 => Zisterne
  */
 char *devices[]{
         "192.168.1.240",
@@ -138,7 +140,7 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     // Begin POST Request.
     if (http.GET() != 200) {
         // Print Response.
-        Serial.println(http.getString());
+        //Serial.println(http.getString());
     }
 
     // Create new Document.
@@ -170,10 +172,10 @@ BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, Strin
     // Begin POST Request.
     if (http.POST(dataIO) != 200) {
         // Print Response.
-        Serial.println(http.getString());
+        //Serial.println(http.getString());
     }
 
-    Device::println(http.getString());
+    // Device::println(http.getString());
 
     // Create new Document.
     DynamicJsonDocument document(1024);

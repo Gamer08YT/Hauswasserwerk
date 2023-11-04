@@ -4,7 +4,7 @@
 #include <ArduinoHA.h>
 #include <MQTT.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #include <ETH.h>
 #include "Watcher.h"
 #include "Network.h"
@@ -23,7 +23,7 @@ byte macIO[] = {
 
 // http://tomeko.net/online_tools/file_to_hex.php?lang=en
 // https://gzip.swimburger.net/
-const unsigned char indexIO[] = {
+/*const unsigned char indexIO[] = {
         0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x8D, 0x53, 0xDB, 0x6A, 0xDC, 0x30,
         0x10, 0xFD, 0x95, 0xA9, 0x9F, 0x5A, 0xA8, 0xEC, 0x6C, 0x36, 0x29, 0xA5, 0x78, 0x4D, 0xC9, 0x05,
         0x42, 0x2F, 0xB4, 0xD0, 0x40, 0xE9, 0xA3, 0x6C, 0xCD, 0xAE, 0x95, 0xD5, 0x0D, 0x69, 0xBC, 0x5E,
@@ -66,13 +66,13 @@ const unsigned char indexIO[] = {
         0xB9, 0xF4, 0x61, 0x8A, 0x7A, 0xD3, 0xF3, 0xFC, 0x4C, 0x70, 0x7A, 0x72, 0xBA, 0xFC, 0xA7, 0xB7,
         0x75, 0x95, 0xAB, 0x3F, 0xCA, 0x3D, 0x4B, 0x7A, 0xDC, 0xFE, 0x06, 0x9F, 0x10, 0x07, 0x0B, 0x7F,
         0x04, 0x00, 0x00
-};
+};*/
 
 // Store WebServer Instance.
 AsyncWebServer server(80);
 
 // Timer for HA Updates.
-SimpleTimer updateIO(2500);
+SimpleTimer updateIO(1500);
 
 // Define Home Assistant Credentials.
 HADevice device;
@@ -80,7 +80,7 @@ HADevice device;
 WiFiClient client;
 
 // Define Home Assistant MQTT Instance.
-HAMqtt mqtt(client, device, 15);
+HAMqtt mqtt(client, device, 16);
 
 // Store Refill Trigger.
 HANumber minIO("water_min", HABaseDeviceType::PrecisionP0);
@@ -200,11 +200,11 @@ void setup() {
 
 void setupHTTP() {
     // Handle Index Query.
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    /*server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", indexIO, sizeof(indexIO));
         response->addHeader("Content-Encoding", "gzip");
         request->send(response);
-    });
+    });*/
 
     // Begin WebServer.
     server.begin();
@@ -312,7 +312,7 @@ void setupHA() {
 
     // Prepare for Home Assistant.
     device.setName("Wasserwerk");
-    device.setSoftwareVersion("1.0.0");
+    device.setSoftwareVersion("1.1.0");
     device.setModel("ESP32");
     device.setManufacturer("Jan Heil (www.byte-store.de)");
     device.enableSharedAvailability();
@@ -330,7 +330,7 @@ void setupHA() {
 
     // Prepare Normal Trigger.
     // Define normal Level to refill (when it's Rain and Cistern is getting to full Tank is getting filled to Max Value).
-    normalIO.setMax(85);
+    normalIO.setMax(75);
     normalIO.setMin(25);
     normalIO.setName("Normal");
     normalIO.onCommand(MQTT::onNormal);
@@ -440,7 +440,7 @@ void setupHA() {
  */
 void setupOTA() {
     // Begin OTA Server with Internal Storage.
-    AsyncElegantOTA.begin(&server/*, "ByteWasserwerk", "ByteWasserwerk"*/);
+    ElegantOTA.begin(&server);
 }
 
 /**
@@ -475,9 +475,6 @@ void loop() {
 
     // Loop Watcher Thread.
     Watcher::loop();
-
-    // Handle Telnet Stream.
-    //Device::handleTelnet();
 
     // Handle Slave Loop.
     Slave::loop();

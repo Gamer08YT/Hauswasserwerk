@@ -11,17 +11,11 @@
 #define LEVEL_FILL 36
 #define LEVEL_ALARM 4
 #define METER 39
-#define WATER 35
-// Tank Height + Sensor Offset of 20 cm = 54cm + 30cm.
-#define TANK_HEIGHT 54
-#define BUCKET_HEIGHT 25
 #define UNLOCK_BUTTON 2
 #define SDA 5
 #define SCL 17
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-#define USONIC_DIV 58.0
-#define DEBOUNCE_TIME  50
 #define MIN_SLAVE_POWER 200
 #define MAX_SLAVE_DISABLED 5
 
