@@ -98,6 +98,18 @@ Note 2: 3V3 and 5V power supply, the two can only choose one ！！！
 
 Note 3: IO39, IO35 and IO36, only supports input.
 
+## Hardware:
+
+![](assets/img/hardware.webp)
+![](assets/img/inside.webp)
+
+## Tank:
+
+![](assets/img/overflow.webp)
+![](assets/img/tank.webp)
+![](assets/img/kombination.webp)
+![](assets/img/pump.webp)
+
 #### Debugging:
 
 Remove Sensor Data:
