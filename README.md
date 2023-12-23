@@ -67,6 +67,8 @@ graph TD
 
 ## Mischen
 
+![](assets/img/mix.png)
+
 ```mermaid
 graph TD
     Level(Level Sensor) --> Logic
