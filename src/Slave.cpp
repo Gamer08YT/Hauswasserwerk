@@ -92,7 +92,6 @@ TaskHandle_t ntp_task;
  *
  * \return void
  */
-
 void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
     // todo: At OFF: check 1-2 Seconds later if Power Consumption = 0, else Shelly is defect... Trigger Alarm!
     // todo: At ON: check 1-2 Seconds later if Power Consumption > 0, else Pump Swimming Switch has no Water.

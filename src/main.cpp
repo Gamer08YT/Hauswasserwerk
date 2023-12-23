@@ -95,7 +95,6 @@ void setupHTTP();
  * @note
  * It is recommended to call this function from the main() function.
  */
-
 void setup() {
     // Begin Serial Console.
     Serial.begin(115200);

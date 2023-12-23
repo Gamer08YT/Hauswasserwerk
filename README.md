@@ -15,7 +15,7 @@ bereitgestellt.
 STOP CHECKING SHELLY EVERY 15 SECONDS...
 CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
 
-- Telnet Server ✅
+- Telnet Server ✅ (Removed to save Calculation Power: https://github.com/Gamer08YT/Hauswasserwerk/commit/9cf62652142b0a99b1d55ce0b070886ef9a440bf)
 - Automatische Befüllung des Pufferspeichers. ✅
 - Automatische Befüllung nach Vorrang.
 - Fehlermeldung (Anhand Füllstand, bei BSPW. 10% Druckspeicherpumpe nicht mehr einschalten.) ✅
@@ -29,18 +29,22 @@ CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
 
 ```mermaid
 graph TD
-    Master(Master) --> Netzwerk
-    Netzwerk --> Shelly1(Shelly)
-    Netzwerk --> Shelly2(Shelly)
+    Master(Master) <--> Netzwerk
+    Netzwerk <--> Shelly1(Shelly)
+    Netzwerk <--> Shelly2(Shelly)
     Shelly1 --> Pumpe1(Tauchpumpe)
     Shelly2 --> Pumpe2(Tauchpumpe)
+    Shelly1 <--> Addon(Analog Addon)
+    Addon <--> TL1361(TL136)
+    Addon <--> Pegelschalter2(Pegelschalter)
     Master --> Aktoren
     Aktoren --> Pumpe3(Druckspeicherpumpe)
     Aktoren --> Lampe1(Fehler LED)
     Aktoren --> Lampe2(Status LED)
-    Master --> Sensoren
-    Sensoren --> Pegelschalter
-    Sensoren --> Wassermelder
+    Master <--> Sensoren
+    Sensoren --> TL136(TL136)
+    Sensoren <--> Pegelschalter
+    Sensoren <--> Wassermelder
 ```
 
 ## Abläufe:
@@ -59,6 +63,15 @@ graph TD
     - Wenn Leitungsaufnahme zu gering, Fehlermeldung auslösen **(Trockenlaufschutz ausgelöst)**
 2. Pumpe einschalten
 3. Pumpe abschalten
+
+## Mischen
+
+```mermaid
+graph TD
+    Level(Level Sensor) --> Logic
+    Logic --> Pumpe1(Tauchpumpe 1)
+    Logic --> Pumpe2(Tauchpumpe 2)
+```
 
 ## Flashen
 
