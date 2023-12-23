@@ -24,6 +24,8 @@ public:
     static void minV(HANumeric, HANumber *);
 
     static void maxV(HANumeric, HANumber *);
+
+    static void onRatio(HANumeric number, HANumber* sender);
 };
 
 

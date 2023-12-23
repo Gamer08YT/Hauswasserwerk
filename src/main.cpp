@@ -106,6 +106,8 @@ void setup() {
     Watcher::setup();
     Slave::setup();
 
+    // Create new Slave Object.
+
     // Display Bootscreen.
     Slave::showBootscreen();
 
@@ -310,6 +312,7 @@ void setupHA() {
     mix1.setMode(HANumber::ModeSlider);
     mix1.setUnitOfMeasurement("%");
     mix1.setRetain(true);
+    mix1.onCommand(MQTT::onRatio);
 
     // Prepare Fields for Voltage Calibrations.
     minVoltage.setRetain(true);

@@ -36,6 +36,12 @@ float voltage_min = 0.90;
 bool fillIO = false;
 
 
+int mixIO = 50;
+
+int averageIO = 30;
+
+int8_t ratioIO = 15;
+
 /**
  * @brief Getter method for level switch of the Watcher class.
  *
@@ -78,11 +84,9 @@ void Watcher::handleConditions() {
     // Check if Level is not Above Max value.
     // If True, disallow Pump1 and Pump2.
     if (percentIO < level_max && percentIO >= 0) {
-
         // Check if Level is not Below Min Value.
         // If True, disallow Pump3.
         if (percentIO > level_min) {
-
             // Reset Error Message.
             Slave::setError(false);
 
@@ -96,11 +100,13 @@ void Watcher::handleConditions() {
 
                     // Set State of Process.
                     fillIO = false;
-                } else {
+                }
+                else {
                     // Start Pump 1 - 2;
                     refill();
                 }
-            } else if (percentIO < level_normal) {
+            }
+            else if (percentIO < level_normal) {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "FÜLLEN...");
 
@@ -113,17 +119,20 @@ void Watcher::handleConditions() {
 
             // Allow Pump3 to Pump.
             Slave::setPump(true);
-        } else {
+        }
+        else {
             // Disallow Pump3 to Pump.
             Slave::setPump(false);
 
             Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         }
-    } else {
+    }
+    else {
         if (percentIO >= 0) {
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
             Slave::setPump(true, true);
-        } else {
+        }
+        else {
             Slave::setError(true, "Ultraschall Fehler.", true, "Ultraschall [X]");
             Slave::setPump(false);
         }
@@ -174,7 +183,7 @@ void Watcher::loop() {
  */
 
 float Watcher::getPower() {
-    return (float) irmsIO * 230;
+    return (float)irmsIO * 230;
 }
 
 /**
@@ -205,7 +214,6 @@ void Watcher::setMax(int valueIO) {
     if (valueIO <= 85) {
         level_max = valueIO;
     }
-
 }
 
 /**
@@ -304,9 +312,20 @@ float Watcher::getLevelDistance() {
  * This function activates either Pump1 or Pump2 to refill the water tank.
  */
 void Watcher::refill() {
-    // Activate Pump1 or Pump2.
-    Slave::setSlave(0, true);
-    Slave::setSlave(1, true);
+    // Get Current Position and Check if Position is in Ratio Range.
+
+    // Percent of current position eq. 50%
+    // Pump0 eq 50% - 65%
+    // Pump1 eq. 65% - 80%
+
+    if(percentIO <= (getMin() + ratioIO)) {
+        // Activate Pump1
+        Slave::setSlave(0, true);
+    } else {
+        // Activate Pump2
+        Slave::setSlave(1, true);
+    }
+
 }
 
 float Watcher::getDistance() {
@@ -331,3 +350,24 @@ void Watcher::setMaxV(float voltageIO) {
     // Create new Task for Measurements.
     xTaskCreate(runMeasurements, "measurements", 10000, NULL, 50, &measurements_task);
 }*/
+
+/**
+ * \brief 
+ * \param int8
+ */
+void Watcher::setRatio(int8_t int8) {
+    ratioIO = int8;
+
+    // Max eq. 80%
+    // Min eq. 50%
+    // Average = Fill Area eq. 30%
+    averageIO = getMax() - getMin();
+
+    // Calculate Fill Ratio.
+    // Ratio eq. 50%
+    // Mix = (average / 100) * ratioIO eq. (30% / 100) * 50 = 15%
+    mixIO = (averageIO / 100) * ratioIO;
+
+    // Calculate Ratio for Pump 1
+    //pump1 = averageIO - mixIO;
+}

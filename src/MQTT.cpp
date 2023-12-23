@@ -42,3 +42,9 @@ void MQTT::maxV(HANumeric numberIO, HANumber *senderIO) {
 
     senderIO->setState(numberIO);
 }
+
+void MQTT::onRatio(HANumeric numberIO, HANumber* sender) {
+    Watcher::setRatio(numberIO.toInt8());
+
+    sender->setState(numberIO);
+}

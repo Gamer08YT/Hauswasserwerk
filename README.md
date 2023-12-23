@@ -17,10 +17,11 @@ CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
 
 - Telnet Server ✅ (Removed to save Calculation Power: https://github.com/Gamer08YT/Hauswasserwerk/commit/9cf62652142b0a99b1d55ce0b070886ef9a440bf)
 - Automatische Befüllung des Pufferspeichers. ✅
-- Automatische Befüllung nach Vorrang.
+- Automatische Befüllung nach Vorrang. (50%)
 - Fehlermeldung (Anhand Füllstand, bei BSPW. 10% Druckspeicherpumpe nicht mehr einschalten.) ✅
 - Fehlermeldung (Anhand Leistungsaufnahme)
 - Füllstandüberwachung (Ultraschall) ✅
+- Füllstandüberwachung (TL136) ✅
 - Wassermelder
 - PUSH Benachrichtigungen* ✅
 

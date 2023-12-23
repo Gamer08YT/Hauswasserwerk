@@ -37,6 +37,8 @@ public:
 
     static void setMaxV(float aFloat);
 
+    static void setRatio(int8_t int8);
+
 private:
     static void handleConditions();
 
@@ -45,7 +47,7 @@ private:
     static void refill();
 
     static void stopRefill();
-};
+    };
 
 
 #endif //HAUSWASSERWERK_WATCHER_H
