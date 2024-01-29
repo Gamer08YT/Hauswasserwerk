@@ -319,11 +319,27 @@ void Watcher::refill() {
     // Pump1 eq. 65% - 80%
 
     if(percentIO <= (getMin() + ratioIO)) {
-        // Activate Pump1
-        Slave::setSlave(0, true);
+        if(!Slave::isDisabled(0)) {
+            // Activate Pump1
+            Slave::setSlave(0, true);
+
+            // Check if Pump1 consuming Energy otherwise Fallback to Pump2.
+            Slave::handleDisableStatus(0);
+        } else {
+            // Activate Pump2
+            Slave::setSlave(1, true);
+        }
     } else {
-        // Activate Pump2
-        Slave::setSlave(1, true);
+        if(!Slave::isDisabled(1)) {
+            // Activate Pump2
+            Slave::setSlave(1, true);
+
+            // Check if Pump2 consuming Energy otherwise Fallback to Pump1.
+            Slave::handleDisableStatus(1);
+        } else {
+            // Activate Pump1
+            Slave::setSlave(0, true);
+        }
     }
 
 }
@@ -336,6 +352,9 @@ void Watcher::stopRefill() {
     // Disable Pump1 or Pump2.
     Slave::setSlave(0, false);
     Slave::setSlave(1, false);
+
+    // Reset Disable State.
+    Slave::setDisabled(-1);
 }
 
 void Watcher::setMinV(float voltageIO) {

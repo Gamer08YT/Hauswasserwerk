@@ -214,7 +214,7 @@ void setupMQTT() {
     mqtt.onConnected(onConnected);
 
     // Connect to HomeAssistant.
-    mqtt.begin("homeassistant.local", "wasserwerk", "wasserwerk");
+    mqtt.begin("homeassistant.local", "wasserwerk1", "wasserwerk");
 
     // Print Debug Message.
     Serial.println("Connecting to HomeAssistant MQTT Server.");
@@ -355,6 +355,9 @@ void setupHA() {
 
     // Print Debug Message.
     Serial.println("Finished registration in HomeAssistant.");
+
+    // Set Display Message.
+    Slave::infoDisplay("Server", "VERBUNDEN");
 }
 
 /**
@@ -380,6 +383,9 @@ void setupHA() {
 void setupOTA() {
     // Begin OTA Server with Internal Storage.
     ElegantOTA.begin(&server);
+
+    // Set Display Message.
+    Slave::infoDisplay("OTA", "ONLINE");
 }
 
 /**
