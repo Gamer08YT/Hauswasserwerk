@@ -136,6 +136,7 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
+    http.useHTTP10(true);
     http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
@@ -166,6 +167,8 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
 
 BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, String dataIO) {
     HTTPClient http;
+
+    http.useHTTP10(true);
 
     // Begin HTTP Connection.
     http.begin(getURL(idIO, urlIO));
@@ -390,7 +393,25 @@ BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
  */
 
 float Slave::getPower(int idIO) {
-    return getSlave(idIO)["apower"].as<float>();
+    auto slaveIO = getSlave(idIO);
+
+    if(slaveIO == nullptr)
+        return 0.0f;
+
+    if(!slaveIO["apower"].isNull())
+        return 0.0f;
+
+    if(!slaveIO["apower"].is<float>()) {
+        // handle error
+        return 0.0f;
+    }
+
+
+    // Warning
+    CRASH
+
+    //getSlave(i)
+    return slaveIO["apower"].as<float>();
 }
 
 String Slave::getError() {

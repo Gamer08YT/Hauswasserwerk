@@ -131,8 +131,7 @@ void Watcher::handleConditions() {
         if (percentIO >= 0) {
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
             Slave::setPump(true, true);
-        }
-        else {
+        } else {
             Slave::setError(true, "Ultraschall Fehler.", true, "Ultraschall [X]");
             Slave::setPump(false);
         }
