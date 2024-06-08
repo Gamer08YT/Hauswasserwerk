@@ -34,12 +34,10 @@ SimpleTimer ntpupdateIO(30000);
 SimpleTimer disableIO(60000);
 
 // Handle Shelly Check Timer.
-//SimpleTimer shellyupdate(15000);
+SimpleTimer shellyupdate(15000);
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-
-int disabledIO = -1;
 
 int contrast = 128;
 
@@ -136,7 +134,6 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     HTTPClient http;
 
     // Begin HTTP Connection.
-    http.useHTTP10(true);
     http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
@@ -146,7 +143,7 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
     }
 
     // Create new Document.
-    DynamicJsonDocument document(1024);
+    DynamicJsonDocument document(512);
 
     // Deserialize JSON Content.
     deserializeJson(document, http.getStream());
@@ -168,8 +165,6 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
 BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, String dataIO) {
     HTTPClient http;
 
-    http.useHTTP10(true);
-
     // Begin HTTP Connection.
     http.begin(getURL(idIO, urlIO));
 
@@ -182,7 +177,7 @@ BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, Strin
     // Device::println(http.getString());
 
     // Create new Document.
-    DynamicJsonDocument document(1024);
+    DynamicJsonDocument document(512);
 
     // Deserialize JSON Content.
     deserializeJson(document, http.getStream());
@@ -393,25 +388,8 @@ BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
  */
 
 float Slave::getPower(int idIO) {
-    auto slaveIO = getSlave(idIO);
-
-    if(slaveIO == nullptr)
-        return 0.0f;
-
-    if(!slaveIO["apower"].isNull())
-        return 0.0f;
-
-    if(!slaveIO["apower"].is<float>()) {
-        // handle error
-        return 0.0f;
-    }
-
-
-    // Warning
-    CRASH
-
-    //getSlave(i)
-    return slaveIO["apower"].as<float>();
+    //getSlave(idIO);
+    return getSlave(idIO)["apower"].as<float>();
 }
 
 String Slave::getError() {
@@ -528,9 +506,12 @@ void Slave::loop() {
     }
 
     // Check if Pump is realy Active.
-    /*if (shellyupdate.isReady()) {
+    /* @todo: Nur zum Test wegen Crashes.
+    if (shellyupdate.isReady()) {
         checkSlaveState(0);
         checkSlaveState(1);
+
+        shellyupdate.reset();
     }*/
 
     // Read Unlock Button.
@@ -572,9 +553,6 @@ void Slave::setDisplayActive() {
 void Slave::ntp() {
     NTP.setTimeZone(TZ_Europe_Berlin);
     NTP.begin();
-
-    // Set Display Message.
-    Slave::infoDisplay("NTP", "SYNCED");
 }
 
 void Slave::checkSlaveState(int idIO) {
@@ -582,59 +560,14 @@ void Slave::checkSlaveState(int idIO) {
 
     // Error when Shelly / Pump not pumps.
     if (states[idIO] && slave < MIN_SLAVE_POWER) {
-        setError(true, "Slave is empty.", false, "Slave [E]");
+        setError(true, "Slave is empty.", false, String("Slave [E] ", slave));
     }
 
     // Error when Shelly Contactor not closing.
     if (!states[idIO] && slave > MAX_SLAVE_DISABLED) {
-        setError(true, "Slave has glued Contacts.", false, "Slave [C]");
+        setError(true, "Slave has glued Contacts.", false, String("Slave [C] ", slave));
     }
 }
-
-/**
- * Set the disabled status for a specific slave.
- *
- * The disabled status indicates whether a slave is disabled or not.
- * A disabled slave will not perform any actions and its state will not be updated.
- *
- * @param slaveIO The ID of the slave for which to set the disabled status.
- */
-void Slave::setDisabled(int slaveIO) {
-    disabledIO = slaveIO;
-}
-
-/**
- * @brief Handles the disable status of a slave IO device.
- *
- * This function checks the power consumption of a slave IO device and sets the `disabledIO` variable if the power consumption is below 10.
- *
- * @param slaveIO The ID of the slave IO device.
- * @return None.
- */
-void Slave::handleDisableStatus(int slaveIO) {
-    // Get Power consumption of Slave.
-    float powerIO = Slave::getPower(slaveIO);
-
-    if(powerIO < 10) {
-        disabledIO = slaveIO;
-    }
-}
-
-/**
- * @brief Check if a specific slave is disabled.
- *
- * This function checks whether a specific slave, identified by `slaveIO`,
- * is disabled. It compares the value of `slaveIO` with the global variable
- * `disabledIO`. If `slaveIO` is equal to `disabledIO`, then the slave is
- * considered disabled and the function returns true. Otherwise, it returns false.
- *
- * @param slaveIO The ID of the slave to check.
- * @return true if the slave is disabled, false otherwise.
- */
-bool Slave::isDisabled(int slaveIO) {
-    return (slaveIO == disabledIO);
-}
-
 
 
 

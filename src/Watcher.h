@@ -47,7 +47,7 @@ private:
     static void refill();
 
     static void stopRefill();
-    };
+};
 
 
 #endif //HAUSWASSERWERK_WATCHER_H

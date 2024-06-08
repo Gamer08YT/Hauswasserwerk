@@ -41,12 +41,6 @@ public:
 
     static void runError(void *parameter);
 
-    static void setDisabled(int slaveIO);
-
-    static void handleDisableStatus(int slaveIO);
-
-    static bool isDisabled(int slaveIO);
-
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
 
