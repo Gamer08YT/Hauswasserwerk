@@ -341,22 +341,6 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
     }
 }
 
-/**
- * @brief Description: This function is responsible for handling run-time errors encountered during the execution of Slave class.
- *
- * @param parameter A pointer to the data parameter that caused the error.
- *
- * @return None
- */
-
-void Slave::runError(void *parameter) {
-    while (true) {
-        digitalWrite(ERROR_LAMP, LOW);
-        delay(1500);
-        digitalWrite(ERROR_LAMP, HIGH);
-        delay(1500);
-    }
-}
 
 /**
  * @brief Get the slave with the specified IO ID.
@@ -618,6 +602,17 @@ void Slave::checkSlaveState(int idIO) {
     if (!states[idIO] && slave > MAX_SLAVE_DISABLED) {
         setError(true, "Slave has glued Contacts.", false, String("Slave [C] ", slave));
     }
+}
+
+/**
+ * @brief Set the error state of the slave device.
+ * @param stateIO The new error state (true for ON, false for OFF).
+ *
+ * This function sets the error state of the slave device by controlling the ERROR_LAMP pin.
+ * If the error state is true, the ERROR_LAMP pin will be set to HIGH, otherwise it will be set to LOW.
+ */
+void Slave::setErrorState(bool stateIO) {
+    digitalWrite(ERROR_LAMP, (!stateIO ? HIGH : LOW));
 }
 
 

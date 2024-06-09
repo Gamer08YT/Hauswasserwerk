@@ -60,6 +60,9 @@ HASensor errorIO("water_error");
 // Store Smart Mode (Pump when Cistern has too much water or from Well when not enough water in Cistern).
 HASwitch smart("water_smart");
 
+// Add Button to Test Buzzer.
+HAButton buzzer("water_buzzer");
+
 // Store Buffer Tank Level.
 HASensorNumber buffer("water_buffer", HABaseDeviceType::PrecisionP0);
 
@@ -332,12 +335,15 @@ void setupHA() {
     maxVoltage.setUnitOfMeasurement("V");
     maxVoltage.setMode(HANumber::ModeBox);
 
-
     // Prepare Smart Mode
     smart.setIcon("mdi:eye-check");
     smart.setName("Smart Modus");
     smart.setRetain(true);
     smart.onCommand(MQTT::onSmart);
+
+    // Prepare Buzzer Test.
+    buzzer.setName("Buzzer Test");
+    buzzer.onCommand(MQTT::onBuzzer);
 
     // Prepare Buffer Tank.
     buffer.setName("Füllstand Puffer");
