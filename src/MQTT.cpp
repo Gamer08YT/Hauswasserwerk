@@ -6,6 +6,8 @@
 #include "Slave.h"
 #include "Watcher.h"
 
+// Task handle for controlling.
+TaskHandle_t testTaskHandle = NULL;
 
 void MQTT::onSmart(bool state, HASwitch *sender) {
     Serial.println("SMART VALUE CHANGED");
@@ -48,3 +50,34 @@ void MQTT::onRatio(HANumeric numberIO, HANumber* sender) {
 
     sender->setState(numberIO);
 }
+
+void testTask(void *pvParameters) {
+    (void) pvParameters;  // Prevent unused variable warning
+
+    // Enable Buzzer.
+    Slave::setErrorState(true);
+
+    // Wait for 2 seconds without blocking
+    vTaskDelay(pdMS_TO_TICKS(2000));  // 2000 milliseconds delay
+
+    // Disable Buzzer.
+    Slave::setErrorState(false);
+
+    // Optionally, delete the task if no longer needed
+    vTaskDelete(NULL);
+}
+
+void MQTT::onBuzzer(HAButton* senderIO) {
+    // Create the GPIO task
+    xTaskCreate(
+            testTask,          // Task function
+            "tT",         // Name of the task (for debugging purposes)
+            128,                // Stack size (in words, not bytes)
+            NULL,               // Task input parameter
+            1,                  // Priority of the task
+            &testTaskHandle     // Task handle
+    );
+
+
+}
+

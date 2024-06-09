@@ -9,6 +9,7 @@
 #include "device-types/HANumber.h"
 #include "utils/HANumeric.h"
 #include "device-types/HASwitch.h"
+#include "device-types/HAButton.h"
 
 class MQTT {
 
@@ -26,6 +27,8 @@ public:
     static void maxV(HANumeric, HANumber *);
 
     static void onRatio(HANumeric number, HANumber* sender);
+
+    static void onBuzzer(HAButton *);
 };
 
 

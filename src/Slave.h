@@ -39,7 +39,7 @@ public:
 
     static void ntp();
 
-    static void runError(void *parameter);
+    static void setErrorState(bool stateIO);
 
 private:
     static ArduinoJson::BasicJsonDocument<ArduinoJson::DefaultAllocator> sendGet(int idIO, char *urlIO);
