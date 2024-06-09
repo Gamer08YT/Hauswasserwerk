@@ -24,6 +24,10 @@ int level_min = 30;
 int level_max = 80;
 int level_normal = 50;
 
+// Store Alarm States.
+bool alarm_level = false;
+bool alarm_moist = false;
+
 // Store IRMS.
 float irmsIO = 0;
 
@@ -52,7 +56,9 @@ int8_t ratioIO = 15;
  */
 
 bool Watcher::getLevelSwitch() {
-    return digitalRead(LEVEL_SWITCH);
+    alarm_level = digitalRead(LEVEL_SWITCH);
+
+    return alarm_level;
 }
 
 /**
@@ -249,14 +255,35 @@ void Watcher::setNormal(int valueIO) {
     }
 }
 
+/**
+ * @brief Get the maximum level value.
+ *
+ * This function returns the value of the maximum level. The maximum level represents the highest level that can be measured.
+ *
+ * @return The maximum level value.
+ */
 int Watcher::getMax() {
     return level_max;
 }
 
+/**
+ * @brief Retrieves the minimum water level value.
+ *
+ * This function returns the stored minimum water level value.
+ *
+ * @return The minimum water level value.
+ */
 int Watcher::getMin() {
     return level_min;
 }
 
+/**
+ * @brief Get the normal level.
+ *
+ * This function returns the normal level of the watcher.
+ *
+ * @return The normal level.
+ */
 int Watcher::getNormal() {
     return level_normal;
 }
@@ -328,20 +355,53 @@ void Watcher::refill() {
 
 }
 
+/**
+ * @brief Returns the current distance value.
+ *
+ * This function returns the current distance value that is stored in the `distanceIO` variable.
+ * The distance value is a floating point number.
+ *
+ * @return The current distance value.
+ */
 float Watcher::getDistance() {
     return distanceIO;
 }
 
+/**
+ * @brief Stops the refill process by disabling Pump1 and Pump2.
+ *
+ * This function sets the state of both Pump1 and Pump2 to false,
+ * effectively turning them off and stopping the refill process.
+ *
+ * @note This function internally calls the static function `setSlave` to
+ * set the state of the slaves.
+ *
+ * @see setSlave
+ */
 void Watcher::stopRefill() {
     // Disable Pump1 or Pump2.
     Slave::setSlave(0, false);
     Slave::setSlave(1, false);
 }
 
+/**
+ * @brief Sets the minimum voltage input value.
+ *
+ * This function sets the value of voltage_min, which represents the minimum voltage input.
+ *
+ * @param voltageIO The minimum voltage input value to be set.
+ */
 void Watcher::setMinV(float voltageIO) {
     voltage_min = voltageIO;
 }
 
+/**
+ * @brief Sets the maximum voltage value.
+ *
+ * This function sets the maximum voltage value that can be measured by the Watcher class.
+ *
+ * @param voltageIO The maximum voltage value to be set.
+ */
 void Watcher::setMaxV(float voltageIO) {
     voltage_max = voltageIO;
 }
@@ -352,8 +412,8 @@ void Watcher::setMaxV(float voltageIO) {
 }*/
 
 /**
- * \brief
- * \param int8
+ * @brief Sets the ratio input and calculates average and mix ratios.
+ * @param int8 The ratio input value.
  */
 void Watcher::setRatio(int8_t int8) {
     ratioIO = int8;
@@ -370,4 +430,17 @@ void Watcher::setRatio(int8_t int8) {
 
     // Calculate Ratio for Pump 1
     //pump1 = averageIO - mixIO;
+}
+
+/**
+ * @brief Reads the level alarm status.
+ *
+ * This function reads the level alarm status by reading the digital pin LEVEL_ALARM.
+ *
+ * @return true if the level alarm is raised, false otherwise.
+ */
+bool Watcher::readLevelAlarm() {
+    alarm_moist = digitalRead(LEVEL_ALARM);
+
+    return alarm_moist;
 }

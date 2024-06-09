@@ -400,6 +400,11 @@ bool Slave::getState(int idIO) {
     return states[idIO];
 }
 
+/**
+ * @brief Sets the message to display on the slave device.
+ *
+ * If the new message is different from the currently displayed message,
+ * the current display will be cleared and the new*/
 /*
 void Slave::setDisplay(String messageIO) {
     // Avoid to much Calculation.
@@ -414,6 +419,10 @@ void Slave::setDisplay(String messageIO) {
 }
 */
 
+
+/**
+ * @brief Shows Bitmap on Screen (Small Water faucet)
+ */
 void Slave::showBootscreen() {
     // Show initial display buffer contents on the screen --
     oled_display.clearDisplay();
@@ -456,19 +465,14 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
 }
 
 /**
- * \brief Update a line in the Slave class.
  *
- * This function updates a line in the Slave class by replacing its content and/or modifying its position.
+ * This function updates a line on the Screen by replacing its content and/or modifying its position.
  *
  * \param contentIO The content of the line to be updated.
  * \param xIO The new x-coordinate position of the line.
  * \param yIO The new y-coordinate position of the line.
  * \param forceIO Determines whether to force the update regardless of the line's current content and position.
  *              Set to true to force the update, false otherwise.
- *
- * \note The line to be updated must already exist in the Slave class. If forceIO is set to false, the update
- *       will only occur if the line's content or position has changed. If forceIO is set to true, the update
- *       will be performed regardless of the line's current state.
  *
  * \return void
  */
@@ -491,6 +495,20 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
     }
 }
 
+/**
+ * @brief This method represents the main loop of the Slave class.
+ *
+ * This method is responsible for performing the main operations of the Slave class.
+ * It continuously runs and keeps the Slave object active, processing incoming commands
+ * and executing the corresponding actions. This method should be called after initializing
+ * the Slave object and setting up the necessary configurations.
+ *
+ * @note This method does not return and continuously runs until the program is terminated.
+ *
+ * @see Slave::initialize()
+ * @see Slave::processCommand()
+ * @see Slave::executeAction()
+ */
 void Slave::loop() {
     // Dim Display if Time is exceeded.
     if (dimIO.isReady()) {
@@ -533,6 +551,28 @@ void Slave::loop() {
     }
 }
 
+/**
+ * @brief Sets the contrast of the OLED display.
+ *
+ * This function sets the contrast of the OLED display to the specified value.
+ * If the specified value is different from the current contrast value, it sends the necessary commands to the display
+ * to update the contrast.
+ *
+ * @param valueIO The contrast value to set.
+ *
+ * @details
+ * This function first checks if the specified contrast value is different from the current contrast value.
+ * If they are different, it sends the SSD1306_SETCONTRAST command and the specified contrast value to the OLED display through the `oled_display.ssd1306_command()` function.
+ * Finally, it updates the current contrast value with the specified value.
+ *
+ * @see `Slave::oled_display`
+ * @see `Adafruit_SSD1306::ssd1306_command()`
+ *
+ * @code
+ *   Slave slave;
+ *   slave.setContrast(100);
+ * @endcode
+ */
 void Slave::setContrast(int valueIO) {
     if (valueIO != contrast) {
         oled_display.ssd1306_command(SSD1306_SETCONTRAST);
@@ -542,6 +582,11 @@ void Slave::setContrast(int valueIO) {
     }
 }
 
+/**
+ * @brief Sets the display active.
+ *
+ * This function resets the dimIO and disableIO timers, sets the display_state to true, and configures the display.
+ */
 void Slave::setDisplayActive() {
     dimIO.reset();
     disableIO.reset();
@@ -550,6 +595,12 @@ void Slave::setDisplayActive() {
     setContrast(128);
 }
 
+/**
+ * @brief Set the time zone for NTP synchronization.
+ *
+ * This function sets the time zone for NTP synchronization to Europe/Berlin.
+ * It ensures that the correct time offset is applied when NTP updates the system time.
+ */
 void Slave::ntp() {
     NTP.setTimeZone(TZ_Europe_Berlin);
     NTP.begin();

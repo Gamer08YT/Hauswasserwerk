@@ -44,6 +44,7 @@ HABinarySensor pump1("water_pump1");
 HABinarySensor pump2("water_pump2");
 HABinarySensor pump3("water_pump3");
 HABinarySensor maxSwitch("water_max");
+HABinarySensor moistSwitch("water_moist");
 
 // Store Mixing Values.
 HANumber mix1("water_mix1");
@@ -305,6 +306,10 @@ void setupHA() {
     maxSwitch.setName("Überlauf");
     maxSwitch.setCurrentState(false);
 
+    // Prepare Moist Switch.
+    moistSwitch.setName("Rohrbruch");
+    moistSwitch.setCurrentState(false);
+
     // Prepare Mix 1
     mix1.setName("Misch. Brunnen / Zisterne");
     mix1.setMax(100);
@@ -440,7 +445,9 @@ void loop() {
         pump2.setState(Slave::getState(1));
         pump3.setState(Slave::getState(2));
 
+        // Read Values of Digital Inputs.
         maxSwitch.setCurrentState(Watcher::getLevelSwitch());
+        moistSwitch.setCurrentState(Watcher::readLevelAlarm());
 
         // Reset Timer State.
         updateIO.reset();

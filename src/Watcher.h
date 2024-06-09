@@ -11,6 +11,8 @@ public:
 
     static bool getLevelSwitch();
 
+    static bool readLevelAlarm();
+
     static float getLevelDistance();
 
     static void handleMeasurement();

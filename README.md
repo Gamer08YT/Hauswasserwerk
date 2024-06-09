@@ -5,7 +5,9 @@ ___
 ![](assets/img/hauswasserwerk.png)
 
 Das Hauswasserwerk besteht aus mehreren Pumpen, welche beide über WiFi Smart Aktoren angesteuert werden.
-Die Master-Einheit besteht aus einem Arduino Uno mit W5500 Ethernet Driver.
+Die Master-Einheit besteht aus einem WT32-ETH01 (ESP32 with Ethernet Jack).
+
+[//]: # (Arduino Uno mit W5500 Ethernet Driver.)
 
 Die Konfigurationen werden jeweils auf den Geräten Lokal gespeichert, eine Steuerung wird über HomeAssistant
 bereitgestellt.
@@ -17,12 +19,12 @@ CHECK ONLY AFTER AN ACTION setSlave ... 3time or so...
 
 - Telnet Server ✅ (Removed to save Calculation Power: https://github.com/Gamer08YT/Hauswasserwerk/commit/9cf62652142b0a99b1d55ce0b070886ef9a440bf)
 - Automatische Befüllung des Pufferspeichers. ✅
-- Automatische Befüllung nach Vorrang. (50%)
+- Automatische Befüllung nach Vorrang. ✅
 - Fehlermeldung (Anhand Füllstand, bei BSPW. 10% Druckspeicherpumpe nicht mehr einschalten.) ✅
 - Fehlermeldung (Anhand Leistungsaufnahme)
 - Füllstandüberwachung (Ultraschall) ✅
 - Füllstandüberwachung (TL136) ✅
-- Wassermelder
+- Wassermelder (current todo)
 - PUSH Benachrichtigungen* ✅
 
 *Via HA
@@ -54,15 +56,15 @@ graph TD
 
 1. Pumpe einschalten
 2. Pumpe auf Leistungsaufnahme überwachen
-3. Pumpe nach max. X (30) Sekunden abschalten und Fehlermeldung **(Eventuelle Leckage)** auslösen.
+   - Pumpe nach max. X (30) Sekunden abschalten und Fehlermeldung **(Eventuelle Leckage)** auslösen.
 4. Pumpe abschalten.
 
 ### Tauchpumpen:
 
-1. Pumpe auf Leistungsaufnahme überwachen.
-    - Wenn Leistungsaufnahme verfügbar trotz ausschaltbefehl Fehlermeldung **(Relais klebt)**...
-    - Wenn Leitungsaufnahme zu gering, Fehlermeldung auslösen **(Trockenlaufschutz ausgelöst)**
-2. Pumpe einschalten
+1. Pumpe einschalten
+2. Pumpe auf Leistungsaufnahme überwachen.
+   - Wenn Leistungsaufnahme verfügbar trotz ausschaltbefehl Fehlermeldung **(Relais klebt)**...
+   - Wenn Leitungsaufnahme zu gering, Fehlermeldung auslösen **(Trockenlaufschutz ausgelöst)**
 3. Pumpe abschalten
 
 ## Mischen
@@ -90,6 +92,24 @@ GND -> IO0
 
 ## Pinout
 
+### Software Based Pinout
+You can define it under **src/PINOUT.h**.
+
+| Bezeichnung                                   | GPIO |
+|-----------------------------------------------|------|
+| Meldeleuchte (Fehler)                         | 14   |
+| Schaltausgang (Pumpe aktivieren)              | 15   |
+| Digital (Schwimmer Schalter / Tank zu voll)   | 35   |
+| Analog (Current to Voltage Converter / TL136) | 36   |
+| Digital (Feuchtigkeitssensor)                 | 4    |
+| Analog (Strommesswandler)                     | 39   |
+| Taster 1 (Bildschirm Aufwecken)               | 2    |
+| SDA                                           | 5    |
+| SCL                                           | 17   |
+
+
+
+### WT32-ETH01 Pinout
 ![](assets/img/pinout.png)
 
 Note 1: The module enables high levels by default.
@@ -110,9 +130,9 @@ Note 3: IO39, IO35 and IO36, only supports input.
 ![](assets/img/kombination.webp)
 ![](assets/img/pump.webp)
 
-#### Debugging:
+## Debugging:
 
-Remove Sensor Data:
+### Remove Sensor Data:
 apk add --no-cache sqlite
 sqlite3 home-assistant_v2.db
 `DELETE FROM states WHERE entity_id="sensor.wasserwerk_fullstand_puffer";`
