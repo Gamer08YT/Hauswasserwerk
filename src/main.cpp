@@ -20,6 +20,9 @@ byte macIO[] = {
         0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
+// Store PCB Software Version.
+const char *versionIO = "1.1.6";
+
 // Store WebServer Instance.
 AsyncWebServer server(80);
 
@@ -104,7 +107,9 @@ void setup() {
     Serial.begin(115200);
 
     // Print Serial Start.
-    Serial.println("Starting.");
+    Serial.print("Starting ");
+    Serial.print(versionIO);
+    Serial.println(".");
 
     // Setup Pins.
     Watcher::setup();
@@ -120,6 +125,9 @@ void setup() {
 
     // Set Display Message.
     Slave::infoDisplay("System", "BOOTING");
+
+    // Update Fill Level.
+    Slave::updateLine(versionIO, 0, 32);
 
     // Setup LAN Connection.
     Network::setupLAN();
@@ -254,7 +262,7 @@ void setupHA() {
 
     // Prepare for Home Assistant.
     device.setName("Wasserwerk");
-    device.setSoftwareVersion("1.1.5");
+    device.setSoftwareVersion(versionIO);
     device.setModel("ESP32");
     device.setManufacturer("Jan Heil (www.byte-store.de)");
     device.enableSharedAvailability();
