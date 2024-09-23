@@ -34,7 +34,7 @@ public:
 
     static int getNormal();
     static bool getIgnoreMoist();
-    static bool setIgnoreMoist(bool valueIO);
+    static void setIgnoreMoist(bool valueIO);
 
     static float getDistance();
 

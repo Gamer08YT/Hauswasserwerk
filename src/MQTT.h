@@ -14,8 +14,6 @@
 class MQTT {
 
 public:
-    static void onSmart(bool state, HASwitch *sender);
-
     static void onMax(HANumeric, HANumber *);
 
     static void onNormal(HANumeric, HANumber *);

@@ -133,6 +133,7 @@ void Watcher::handleConditions()
                 refill();
             }
 
+            // add moist check here
             bool stateIO = true;
 
             if (alarm_moist && !ignoreMoist)
@@ -344,7 +345,7 @@ bool Watcher::getIgnoreMoist()
  *
  * @param valueIO The new value for the ignoreMoist property.
  */
-bool Watcher::setIgnoreMoist(bool valueIO)
+void Watcher::setIgnoreMoist(bool valueIO)
 {
     ignoreMoist = valueIO;
 }
@@ -409,18 +410,25 @@ void Watcher::refill()
     // Pump0 eq 50% - 65%
     // Pump1 eq. 65% - 80%
 
+    // add moist check here
     if (alarm_moist && !ignoreMoist)
-        return;
-
-    if (percentIO <= (getMin() + ratioIO))
     {
-        // Activate Pump1
-        Slave::setSlave(0, true);
+        // Fast disable Slaves.
+        Slave::setSlave(0, false);
+        Slave::setSlave(1, false);
     }
     else
     {
-        // Activate Pump2
-        Slave::setSlave(1, true);
+        if (percentIO <= (getMin() + ratioIO))
+        {
+            // Activate Pump1
+            Slave::setSlave(0, true);
+        }
+        else
+        {
+            // Activate Pump2
+            Slave::setSlave(1, true);
+        }
     }
 }
 

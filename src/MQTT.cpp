@@ -9,13 +9,6 @@
 // Task handle for controlling.
 TaskHandle_t testTaskHandle = NULL;
 
-void MQTT::onSmart(bool state, HASwitch* sender)
-{
-    Serial.println("SMART VALUE CHANGED");
-
-    sender->setState(state);
-}
-
 void MQTT::onNormal(HANumeric numberIO, HANumber* sender)
 {
     Watcher::setNormal(numberIO.toInt8());
@@ -97,4 +90,6 @@ void MQTT::onBuzzer(HAButton* senderIO)
 void MQTT::onIgnore(bool state, HASwitch* sender)
 {
     Watcher::setIgnoreMoist(state);
+
+    sender->setState(state);
 }

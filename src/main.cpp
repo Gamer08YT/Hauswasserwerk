@@ -21,7 +21,7 @@ byte macIO[] = {
 };
 
 // Store PCB Software Version.
-const char* versionIO = "1.1.6";
+const char* versionIO = "1.1.7";
 
 // Store WebServer Instance.
 AsyncWebServer server(80);
@@ -60,9 +60,6 @@ HANumber maxVoltage("water_maxV", HABaseDeviceType::PrecisionP2);
 
 // Store Error Message.
 HASensor errorIO("water_error");
-
-// Store Smart Mode (Pump when Cistern has too much water or from Well when not enough water in Cistern).
-HASwitch smart("water_smart");
 
 // Add Button to Test Buzzer.
 HAButton buzzer("water_buzzer");
@@ -234,7 +231,10 @@ void setupMQTT()
     mqtt.begin("homeassistant.local", "wasserwerk1", "wasserwerk");
 
     // Print Debug Message.
-    Serial.println("Connecting to HomeAssistant MQTT Server.");
+    Serial.println("Connected to HomeAssistant MQTT Server.");
+
+    // Set Display Message.
+    Slave::infoDisplay("MQTT", "FINISH");
 }
 
 
@@ -353,12 +353,6 @@ void setupHA()
     maxVoltage.setUnitOfMeasurement("V");
     maxVoltage.setMode(HANumber::ModeBox);
 
-    // Prepare Smart Mode
-    smart.setIcon("mdi:eye-check");
-    smart.setName("Smart Modus");
-    smart.setRetain(true);
-    smart.onCommand(MQTT::onSmart);
-
     // Prepare Buzzer Test.
     buzzer.setName("Buzzer Test");
     buzzer.onCommand(MQTT::onBuzzer);
@@ -474,7 +468,7 @@ void loop()
 
         // Read Values of Digital Inputs.
         maxSwitch.setCurrentState(Watcher::getLevelSwitch());
-        moistSwitch.setCurrentState(Watcher::readLevelAlarm());
+        moistSwitch.setCurrentState(!Watcher::readLevelAlarm());
 
         // Reset Timer State.
         updateIO.reset();
