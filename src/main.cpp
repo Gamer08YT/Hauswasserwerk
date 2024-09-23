@@ -139,7 +139,7 @@ void setup() {
     setupHTTP();
 
     // Setup NTP.
-    Slave::ntp();
+    // Slave::ntp();
 
     // Wait for a short Period.
     delay(250);

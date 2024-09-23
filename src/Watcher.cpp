@@ -55,7 +55,8 @@ int8_t ratioIO = 15;
  * @return The current level switch value.
  */
 
-bool Watcher::getLevelSwitch() {
+bool Watcher::getLevelSwitch()
+{
     alarm_level = digitalRead(LEVEL_SWITCH);
 
     return alarm_level;
@@ -70,7 +71,8 @@ bool Watcher::getLevelSwitch() {
  * enable the monitoring of a specific system or application.
  */
 
-void Watcher::setup() {
+void Watcher::setup()
+{
     pinMode(LEVEL_SWITCH, INPUT);
     pinMode(LEVEL_FILL, INPUT);
     pinMode(METER, INPUT);
@@ -86,18 +88,23 @@ void Watcher::setup() {
  * This function is responsible for checking the water level conditions and controlling the pumps accordingly. It checks if the water level is within the acceptable range and takes appropriate
 * actions. It also updates the display with the current fill state and updates the fill level.
  */
-void Watcher::handleConditions() {
+void Watcher::handleConditions()
+{
     // Check if Level is not Above Max value.
     // If True, disallow Pump1 and Pump2.
-    if (percentIO < level_max && percentIO >= 0) {
+    if (percentIO < level_max && percentIO >= 0)
+    {
         // Check if Level is not Below Min Value.
         // If True, disallow Pump3.
-        if (percentIO > level_min) {
+        if (percentIO > level_min)
+        {
             // Reset Error Message.
             Slave::setError(false);
 
-            if (fillIO) {
-                if (percentIO >= (level_max - 5)) {
+            if (fillIO)
+            {
+                if (percentIO >= (level_max - 5))
+                {
                     // Update Display Fill-state.
                     Slave::infoDisplay("Füllstand:", "BEREIT");
 
@@ -107,12 +114,14 @@ void Watcher::handleConditions() {
                     // Set State of Process.
                     fillIO = false;
                 }
-                else {
+                else
+                {
                     // Start Pump 1 - 2;
                     refill();
                 }
             }
-            else if (percentIO < level_normal) {
+            else if (percentIO < level_normal)
+            {
                 // Update Display Fill-state.
                 Slave::infoDisplay("Füllstand:", "FÜLLEN...");
 
@@ -124,22 +133,26 @@ void Watcher::handleConditions() {
             }
 
             // Allow Pump3 to Pump.
-            Slave::setPump(true);
+            Slave::setPump((!alarm_moist));
         }
-        else {
+        else
+        {
             // Disallow Pump3 to Pump.
             Slave::setPump(false);
 
             Slave::setError(true, "Füllstand zu niedrig.", false, "Füllstand < min");
         }
     }
-    else {
-        if (percentIO >= 0) {
+    else
+    {
+        if (percentIO >= 0)
+        {
             Slave::setError(true, "Füllstand zu hoch.", true, "Füllstand > max");
             Slave::setPump(true, true);
         }
-        else {
-            Slave::setError(true, "Ultraschall Fehler.", true, "Ultraschall [X]");
+        else
+        {
+            Slave::setError(true, "Sensor", true, "Ultraschall [X]");
             Slave::setPump(false);
         }
 
@@ -163,9 +176,11 @@ void Watcher::handleConditions() {
  * \return None.
  */
 
-void Watcher::loop() {
+void Watcher::loop()
+{
     // Read Ultrasonic Sensor.
-    if (timerIO.isReady()) {
+    if (timerIO.isReady())
+    {
         // Read Ultrasonic Sensor.
         readCurrent();
 
@@ -188,7 +203,8 @@ void Watcher::loop() {
  * @return The power of the Watcher object.
  */
 
-float Watcher::getPower() {
+float Watcher::getPower()
+{
     return (float)irmsIO * 230;
 }
 
@@ -202,7 +218,8 @@ float Watcher::getPower() {
  * @return void
  */
 
-void Watcher::handleMeasurement() {
+void Watcher::handleMeasurement()
+{
     // Calc only IRMS in A.
     irmsIO = (monitor.calcIrms(1480) / 1000);
 }
@@ -216,8 +233,10 @@ void Watcher::handleMeasurement() {
  * @param valueIO Integer value indicating the maximum value.
  */
 
-void Watcher::setMax(int valueIO) {
-    if (valueIO <= 85) {
+void Watcher::setMax(int valueIO)
+{
+    if (valueIO <= 85)
+    {
         level_max = valueIO;
     }
 }
@@ -232,8 +251,10 @@ void Watcher::setMax(int valueIO) {
  * \param valueIO The new minimum value to be set for the Watcher.
  */
 
-void Watcher::setMin(int valueIO) {
-    if (valueIO >= 25) {
+void Watcher::setMin(int valueIO)
+{
+    if (valueIO >= 25)
+    {
         level_min = valueIO;
     }
 }
@@ -249,8 +270,10 @@ void Watcher::setMin(int valueIO) {
  * \return None.
  */
 
-void Watcher::setNormal(int valueIO) {
-    if (valueIO > level_min && valueIO < level_max) {
+void Watcher::setNormal(int valueIO)
+{
+    if (valueIO > level_min && valueIO < level_max)
+    {
         level_normal = valueIO;
     }
 }
@@ -262,7 +285,8 @@ void Watcher::setNormal(int valueIO) {
  *
  * @return The maximum level value.
  */
-int Watcher::getMax() {
+int Watcher::getMax()
+{
     return level_max;
 }
 
@@ -273,7 +297,8 @@ int Watcher::getMax() {
  *
  * @return The minimum water level value.
  */
-int Watcher::getMin() {
+int Watcher::getMin()
+{
     return level_min;
 }
 
@@ -284,7 +309,8 @@ int Watcher::getMin() {
  *
  * @return The normal level.
  */
-int Watcher::getNormal() {
+int Watcher::getNormal()
+{
     return level_normal;
 }
 
@@ -298,11 +324,13 @@ int Watcher::getNormal() {
 * The positionIO is calculated as the difference between distanceIO and voltage_min.
 * Finally, the percentIO variable is updated with the percentage value based on the positionIO and rangeIO.
 */
-void Watcher::readCurrent() {
+void Watcher::readCurrent()
+{
     float averageIO = 0;
 
     // Read 10 Values to calculate Average.
-    for (float counter = 0; counter < 5; counter++) {
+    for (float counter = 0; counter < 5; counter++)
+    {
         averageIO = averageIO + analogReadMilliVolts(LEVEL_FILL);
     }
 
@@ -329,7 +357,8 @@ void Watcher::readCurrent() {
  * 100% - 80% = 20%
  */
 
-float Watcher::getLevelDistance() {
+float Watcher::getLevelDistance()
+{
     return percentIO;
 }
 
@@ -338,21 +367,27 @@ float Watcher::getLevelDistance() {
  *
  * This function activates either Pump1 or Pump2 to refill the water tank.
  */
-void Watcher::refill() {
+void Watcher::refill()
+{
     // Get Current Position and Check if Position is in Ratio Range.
 
     // Percent of current position eq. 50%
     // Pump0 eq 50% - 65%
     // Pump1 eq. 65% - 80%
 
-    if(percentIO <= (getMin() + ratioIO)) {
+    if (alarm_moist)
+        return;
+
+    if (percentIO <= (getMin() + ratioIO))
+    {
         // Activate Pump1
         Slave::setSlave(0, true);
-    } else {
+    }
+    else
+    {
         // Activate Pump2
         Slave::setSlave(1, true);
     }
-
 }
 
 /**
@@ -363,7 +398,8 @@ void Watcher::refill() {
  *
  * @return The current distance value.
  */
-float Watcher::getDistance() {
+float Watcher::getDistance()
+{
     return distanceIO;
 }
 
@@ -378,7 +414,8 @@ float Watcher::getDistance() {
  *
  * @see setSlave
  */
-void Watcher::stopRefill() {
+void Watcher::stopRefill()
+{
     // Disable Pump1 or Pump2.
     Slave::setSlave(0, false);
     Slave::setSlave(1, false);
@@ -391,7 +428,8 @@ void Watcher::stopRefill() {
  *
  * @param voltageIO The minimum voltage input value to be set.
  */
-void Watcher::setMinV(float voltageIO) {
+void Watcher::setMinV(float voltageIO)
+{
     voltage_min = voltageIO;
 }
 
@@ -402,7 +440,8 @@ void Watcher::setMinV(float voltageIO) {
  *
  * @param voltageIO The maximum voltage value to be set.
  */
-void Watcher::setMaxV(float voltageIO) {
+void Watcher::setMaxV(float voltageIO)
+{
     voltage_max = voltageIO;
 }
 
@@ -415,7 +454,8 @@ void Watcher::setMaxV(float voltageIO) {
  * @brief Sets the ratio input and calculates average and mix ratios.
  * @param int8 The ratio input value.
  */
-void Watcher::setRatio(int8_t int8) {
+void Watcher::setRatio(int8_t int8)
+{
     ratioIO = int8;
 
     // Max eq. 80%
@@ -439,7 +479,8 @@ void Watcher::setRatio(int8_t int8) {
  *
  * @return true if the level alarm is raised, false otherwise.
  */
-bool Watcher::readLevelAlarm() {
+bool Watcher::readLevelAlarm()
+{
     alarm_moist = digitalRead(LEVEL_ALARM);
 
     return alarm_moist;

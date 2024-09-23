@@ -37,7 +37,7 @@ public:
 
     static void loop();
 
-    static void ntp();
+    // static void ntp();
 
     static void setErrorState(bool stateIO);
 

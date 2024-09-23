@@ -10,7 +10,6 @@
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
 #include "SimpleTimer.h"
-#include "ESPNtpClient.h"
 
 // Store Error Lock.
 bool lockIO = false;
@@ -42,9 +41,9 @@ Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 int contrast = 128;
 
 bool states[] = {
-        false,
-        false,
-        false
+    false,
+    false,
+    false
 };
 
 String display_updates[] = {
@@ -52,31 +51,33 @@ String display_updates[] = {
 };
 
 // https://rickkas7.github.io/DisplayGenerator/index.html
-const unsigned char logo[] PROGMEM = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                      0x1f, 0x0c, 0x3c, 0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x00, 0x1f, 0xff, 0xfc,
-                                      0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x07, 0xdf,
-                                      0xff, 0xfc, 0x00, 0x07, 0xdf, 0xff, 0xfc, 0x00, 0x07, 0xc0, 0x7f, 0x80, 0x00,
-                                      0x07, 0xc0, 0x3f, 0x00, 0x00, 0x07, 0xff, 0xff, 0xfe, 0x00, 0x07, 0xff, 0xff,
-                                      0xff, 0xc0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07,
-                                      0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff,
-                                      0xe0, 0x07, 0xc0, 0x3f, 0x1f, 0xe0, 0x07, 0xc0, 0x3f, 0x0f, 0xe0, 0x07, 0xc0,
-                                      0x00, 0x0f, 0xe0, 0x07, 0xc0, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00, 0x0f, 0xe0,
-                                      0x00, 0x00, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00,
-                                      0x03, 0xc0, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00,
-                                      0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x07,
-                                      0xe0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                      0x00, 0x00, 0x00, 0x00, 0x00};
+const unsigned char logo[] PROGMEM = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x1f, 0x0c, 0x3c, 0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x00, 0x1f, 0xff, 0xfc,
+    0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x00, 0x1f, 0xff, 0xfc, 0x00, 0x07, 0xdf,
+    0xff, 0xfc, 0x00, 0x07, 0xdf, 0xff, 0xfc, 0x00, 0x07, 0xc0, 0x7f, 0x80, 0x00,
+    0x07, 0xc0, 0x3f, 0x00, 0x00, 0x07, 0xff, 0xff, 0xfe, 0x00, 0x07, 0xff, 0xff,
+    0xff, 0xc0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07,
+    0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff, 0xe0, 0x07, 0xff, 0xff, 0xff,
+    0xe0, 0x07, 0xc0, 0x3f, 0x1f, 0xe0, 0x07, 0xc0, 0x3f, 0x0f, 0xe0, 0x07, 0xc0,
+    0x00, 0x0f, 0xe0, 0x07, 0xc0, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00, 0x0f, 0xe0,
+    0x00, 0x00, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00, 0x0f, 0xe0, 0x00, 0x00, 0x00,
+    0x03, 0xc0, 0x00, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00,
+    0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x07,
+    0xe0, 0x00, 0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00
+};
 /**
  * @file
  * @brief Declaration of the devices variable.
  * @see pump0 => pump1 => Brunnen
  * @see pump1 => pump2 => Zisterne
  */
-char *devices[]{
-        "192.168.1.240",
-        "192.168.1.241"
+char* devices[]{
+    "192.168.1.240",
+    "192.168.1.241"
 };
 
 
@@ -92,11 +93,14 @@ TaskHandle_t ntp_task;
  *
  * \return void
  */
-void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
+void Slave::setSlave(int idIO, bool stateIO, int timeIO)
+{
     // todo: At OFF: check 1-2 Seconds later if Power Consumption = 0, else Shelly is defect... Trigger Alarm!
     // todo: At ON: check 1-2 Seconds later if Power Consumption > 0, else Pump Swimming Switch has no Water.
-    if (stateIO) {
-        if (!lockIO) {
+    if (stateIO)
+    {
+        if (!lockIO)
+        {
             String contentIO;
 
             contentIO += R"({"id":"0", "toggle_after": )";
@@ -104,10 +108,14 @@ void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
             contentIO += R"(, "on": true})";
 
             sendPost(idIO, "Switch.Set", contentIO);
-        } else {
+        }
+        else
+        {
             Device::println("PUMP1 and PUMP2 Locked!");
         }
-    } else {
+    }
+    else
+    {
         sendPost(idIO, "Switch.Set", R"({"id":"0", "on": false})");
     }
 
@@ -130,14 +138,16 @@ void Slave::setSlave(int idIO, bool stateIO, int timeIO) {
  * @param urlIO The URL to send the GET request to.
  */
 
-BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
+BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char* urlIO)
+{
     HTTPClient http;
 
     // Begin HTTP Connection.
     http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
-    if (http.GET() != 200) {
+    if (http.GET() != 200)
+    {
         // Print Response.
         //Serial.println(http.getString());
     }
@@ -162,14 +172,16 @@ BasicJsonDocument<DefaultAllocator> Slave::sendGet(int idIO, char *urlIO) {
  * @param dataIO The data to send in the POST request.
  */
 
-BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, String dataIO) {
+BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char* urlIO, String dataIO)
+{
     HTTPClient http;
 
     // Begin HTTP Connection.
     http.begin(getURL(idIO, urlIO));
 
     // Begin POST Request.
-    if (http.POST(dataIO) != 200) {
+    if (http.POST(dataIO) != 200)
+    {
         // Print Response.
         //Serial.println(http.getString());
     }
@@ -205,7 +217,8 @@ BasicJsonDocument<DefaultAllocator> Slave::sendPost(int idIO, char *urlIO, Strin
  * \note The caller must ensure that the `urlIO` buffer is large enough to hold the URL string. Otherwise, a buffer overflow may occur.
  */
 
-String Slave::getURL(int idIO, char *urlIO) {
+String Slave::getURL(int idIO, char* urlIO)
+{
     String string;
 
     string += "http://";
@@ -220,11 +233,16 @@ String Slave::getURL(int idIO, char *urlIO) {
     return string;
 }
 
-void Slave::setPump(bool stateIO, bool forceIO) {
-    if (!stateIO) {
+void Slave::setPump(bool stateIO, bool forceIO)
+{
+    if (!stateIO)
+    {
         digitalWrite(PUMP_3, HIGH);
-    } else {
-        if (!lockIO || forceIO) {
+    }
+    else
+    {
+        if (!lockIO || forceIO)
+        {
             digitalWrite(PUMP_3, LOW);
         }
     }
@@ -241,7 +259,8 @@ void Slave::setPump(bool stateIO, bool forceIO) {
  * @return void
  */
 
-void Slave::setup() {
+void Slave::setup()
+{
     // Setup IC2 Bus.
     Wire.begin(SDA, SCL);
 
@@ -253,10 +272,12 @@ void Slave::setup() {
     digitalWrite(ERROR_LAMP, HIGH);
 
     // Display Setup.
-    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    if (!oled_display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+    {
         setError(true, "Display Error");
-    } else {
-
+    }
+    else
+    {
         // Set Default Size and disable Wrap.
         oled_display.setTextSize(1.5);
         oled_display.setTextColor(WHITE);
@@ -301,10 +322,13 @@ void Slave::setup() {
  *          Use clearError() to clear the error state and code manually when necessary.
  */
 
-void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO) {
+void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO)
+{
     // Create new Task for Displaying Error Blinker.
-    if (stateIO) {
-        if (!lockIO || codeIO != error_message) {
+    if (stateIO)
+    {
+        if (!lockIO || codeIO != error_message)
+        {
             // Print Debug Message.
             error_message = codeIO;
             Device::print("Error: ");
@@ -312,7 +336,8 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             Device::print(" ");
             Device::println(codeIO);
 
-            if (!lockIO && flashIO) {
+            if (!lockIO && flashIO)
+            {
                 //xTaskCreate(runError, "error", 10000, NULL, 100, &error_task);
             }
 
@@ -324,8 +349,11 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
             // Display Error Message on OLED Display.
             infoDisplay("Fehler", displayIO);
         }
-    } else {
-        if (lockIO) {
+    }
+    else
+    {
+        if (lockIO)
+        {
             lockIO = false;
             error_message = "";
 
@@ -358,7 +386,8 @@ void Slave::setError(bool stateIO, String codeIO, bool flashIO, String displayIO
  *
  * @see Slave
  */
-BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
+BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO)
+{
     return sendGet(idIO, "Switch.GetStatus?id=0");
 }
 
@@ -371,16 +400,19 @@ BasicJsonDocument<DefaultAllocator> Slave::getSlave(int idIO) {
  * @return The current power value of the specified IO device.
  */
 
-float Slave::getPower(int idIO) {
+float Slave::getPower(int idIO)
+{
     //getSlave(idIO);
     return getSlave(idIO)["apower"].as<float>();
 }
 
-String Slave::getError() {
+String Slave::getError()
+{
     return error_message;
 }
 
-bool Slave::getState(int idIO) {
+bool Slave::getState(int idIO)
+{
     return states[idIO];
 }
 
@@ -407,7 +439,8 @@ void Slave::setDisplay(String messageIO) {
 /**
  * @brief Shows Bitmap on Screen (Small Water faucet)
  */
-void Slave::showBootscreen() {
+void Slave::showBootscreen()
+{
     // Show initial display buffer contents on the screen --
     oled_display.clearDisplay();
     oled_display.drawBitmap(44, 5, logo, 40, 40, 1);
@@ -428,14 +461,17 @@ void Slave::showBootscreen() {
  * @param titleIO
  * @param contentIO
  */
-void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
-    if (display_message != contentIO && display_title != titleIO) {
-        if (display_state && (!display_button || forceIO)) {
+void Slave::infoDisplay(const char* titleIO, String contentIO, bool forceIO)
+{
+    if (display_message != contentIO && display_title != titleIO)
+    {
+        if (display_state && (!display_button || forceIO))
+        {
             oled_display.clearDisplay();
             oled_display.setCursor(0, 0);
-            oled_display.printlnUTF8(const_cast<char *>(titleIO));
+            oled_display.printlnUTF8(const_cast<char*>(titleIO));
             oled_display.drawLine(0, 15, 128, 15, 1);
-            oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
+            oled_display.printlnUTF8(const_cast<char*>(contentIO.c_str()));
             oled_display.display();
 
             display_message = contentIO;
@@ -461,16 +497,19 @@ void Slave::infoDisplay(const char *titleIO, String contentIO, bool forceIO) {
  * \return void
  */
 
-void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
-    if (display_state && (!display_button || forceIO)) {
-        if (display_updates[yIO - xIO] != contentIO) {
+void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO)
+{
+    if (display_state && (!display_button || forceIO))
+    {
+        if (display_updates[yIO - xIO] != contentIO)
+        {
             // Override Line.
             oled_display.fillRect(xIO, yIO, 128, 14, BLACK);
             oled_display.setCursor(xIO, yIO);
             oled_display.display();
 
             // Print new Data.
-            oled_display.printlnUTF8(const_cast<char *>(contentIO.c_str()));
+            oled_display.printlnUTF8(const_cast<char*>(contentIO.c_str()));
 
             oled_display.display();
             display_updates[yIO - xIO] = contentIO;
@@ -493,15 +532,18 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO) {
  * @see Slave::processCommand()
  * @see Slave::executeAction()
  */
-void Slave::loop() {
+void Slave::loop()
+{
     // Dim Display if Time is exceeded.
-    if (dimIO.isReady()) {
+    if (dimIO.isReady())
+    {
         setContrast(8);
         oled_display.display();
     }
 
     // Disable OLED.
-    if (disableIO.isReady()) {
+    if (disableIO.isReady())
+    {
         display_state = false;
         //oled_display.clearDisplay();
         oled_display.ssd1306_command(SSD1306_DISPLAYOFF);
@@ -520,7 +562,8 @@ void Slave::loop() {
     display_button = !digitalRead(UNLOCK_BUTTON);
 
     // Unlock Error or Un-dim Display.
-    if (display_button) {
+    if (display_button)
+    {
         setDisplayActive();
 
         // Update Display Message.
@@ -528,7 +571,8 @@ void Slave::loop() {
         //updateLine(ETH.localIP().toString(), 0, 32, true);
     }
 
-    if (ntpupdateIO.isReady()) {
+    if (ntpupdateIO.isReady())
+    {
         //updateLine(NTP.getTimeStr(), 0, 48, false);
 
         ntpupdateIO.reset();
@@ -557,8 +601,10 @@ void Slave::loop() {
  *   slave.setContrast(100);
  * @endcode
  */
-void Slave::setContrast(int valueIO) {
-    if (valueIO != contrast) {
+void Slave::setContrast(int valueIO)
+{
+    if (valueIO != contrast)
+    {
         oled_display.ssd1306_command(SSD1306_SETCONTRAST);
         oled_display.ssd1306_command(valueIO);
 
@@ -571,7 +617,8 @@ void Slave::setContrast(int valueIO) {
  *
  * This function resets the dimIO and disableIO timers, sets the display_state to true, and configures the display.
  */
-void Slave::setDisplayActive() {
+void Slave::setDisplayActive()
+{
     dimIO.reset();
     disableIO.reset();
     display_state = true;
@@ -585,21 +632,24 @@ void Slave::setDisplayActive() {
  * This function sets the time zone for NTP synchronization to Europe/Berlin.
  * It ensures that the correct time offset is applied when NTP updates the system time.
  */
-void Slave::ntp() {
-    NTP.setTimeZone(TZ_Europe_Berlin);
-    NTP.begin();
-}
+// void Slave::ntp() {
+//     NTP.setTimeZone(TZ_Europe_Berlin);
+//     NTP.begin();
+// }
 
-void Slave::checkSlaveState(int idIO) {
+void Slave::checkSlaveState(int idIO)
+{
     float slave = Slave::getPower(idIO);
 
     // Error when Shelly / Pump not pumps.
-    if (states[idIO] && slave < MIN_SLAVE_POWER) {
+    if (states[idIO] && slave < MIN_SLAVE_POWER)
+    {
         setError(true, "Slave is empty.", false, String("Slave [E] ", slave));
     }
 
     // Error when Shelly Contactor not closing.
-    if (!states[idIO] && slave > MAX_SLAVE_DISABLED) {
+    if (!states[idIO] && slave > MAX_SLAVE_DISABLED)
+    {
         setError(true, "Slave has glued Contacts.", false, String("Slave [C] ", slave));
     }
 }
@@ -611,9 +661,7 @@ void Slave::checkSlaveState(int idIO) {
  * This function sets the error state of the slave device by controlling the ERROR_LAMP pin.
  * If the error state is true, the ERROR_LAMP pin will be set to HIGH, otherwise it will be set to LOW.
  */
-void Slave::setErrorState(bool stateIO) {
+void Slave::setErrorState(bool stateIO)
+{
     digitalWrite(ERROR_LAMP, (!stateIO ? HIGH : LOW));
 }
-
-
-
