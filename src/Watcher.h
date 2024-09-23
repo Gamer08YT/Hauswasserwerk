@@ -5,7 +5,8 @@
 #ifndef HAUSWASSERWERK_WATCHER_H
 #define HAUSWASSERWERK_WATCHER_H
 
-class Watcher {
+class Watcher
+{
 public:
     static void setup();
 
@@ -32,6 +33,8 @@ public:
     static int getMin();
 
     static int getNormal();
+    static bool getIgnoreMoist();
+    static bool setIgnoreMoist(bool valueIO);
 
     static float getDistance();
 

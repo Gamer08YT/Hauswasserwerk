@@ -27,6 +27,7 @@ int level_normal = 50;
 // Store Alarm States.
 bool alarm_level = false;
 bool alarm_moist = false;
+bool ignoreMoist = false;
 
 // Store IRMS.
 float irmsIO = 0;
@@ -132,8 +133,13 @@ void Watcher::handleConditions()
                 refill();
             }
 
+            bool stateIO = true;
+
+            if (alarm_moist && !ignoreMoist)
+                stateIO = false;
+
             // Allow Pump3 to Pump.
-            Slave::setPump((!alarm_moist));
+            Slave::setPump(stateIO);
         }
         else
         {
@@ -316,6 +322,34 @@ int Watcher::getNormal()
 
 
 /**
+ * @brief Getter method for the ignoreMoist property of the Watcher class.
+ *
+ * This method returns the value of the ignoreMoist property of the Watcher class.
+ * The ignoreMoist property determines whether the Watcher should ignore moisture readings.
+ * If ignoreMoist is set to true, the Watcher will not take action based on moisture levels.
+ * If ignoreMoist is set to false, the Watcher will take action based on moisture levels.
+ *
+ * @return The current value of the ignoreMoist property.
+ */
+bool Watcher::getIgnoreMoist()
+{
+    return ignoreMoist;
+}
+
+/**
+ * @brief Setter method for ignoreMoist property of the Watcher class.
+ *
+ * This method allows to set the value of the ignoreMoist property.
+ * If ignoreMoist is set to true, the Watcher class will ignore moisture levels.
+ *
+ * @param valueIO The new value for the ignoreMoist property.
+ */
+bool Watcher::setIgnoreMoist(bool valueIO)
+{
+    ignoreMoist = valueIO;
+}
+
+/**
 * @brief Reads the current analog input value and calculates the distance and percentage based on the measured value.
 *
 * This function reads 10 analog input values from the LEVEL_FILL pin to calculate an average. It then converts
@@ -375,7 +409,7 @@ void Watcher::refill()
     // Pump0 eq 50% - 65%
     // Pump1 eq. 65% - 80%
 
-    if (alarm_moist)
+    if (alarm_moist && !ignoreMoist)
         return;
 
     if (percentIO <= (getMin() + ratioIO))

@@ -17,11 +17,11 @@
 
 // Store MAC Address of Device.
 byte macIO[] = {
-        0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+    0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
 // Store PCB Software Version.
-const char *versionIO = "1.1.6";
+const char* versionIO = "1.1.6";
 
 // Store WebServer Instance.
 AsyncWebServer server(80);
@@ -48,6 +48,7 @@ HABinarySensor pump2("water_pump2");
 HABinarySensor pump3("water_pump3");
 HABinarySensor maxSwitch("water_max");
 HABinarySensor moistSwitch("water_moist");
+HASwitch ignoreSwitch("water_imoist");
 
 // Store Mixing Values.
 HANumber mix1("water_mix1");
@@ -102,7 +103,8 @@ void setupHTTP();
  * @note
  * It is recommended to call this function from the main() function.
  */
-void setup() {
+void setup()
+{
     // Begin Serial Console.
     Serial.begin(115200);
 
@@ -152,10 +154,10 @@ void setup() {
 
     // Setup MQTT.
     setupMQTT();
-
 }
 
-void setupHTTP() {
+void setupHTTP()
+{
     // Begin WebServer.
     server.begin();
 }
@@ -175,7 +177,8 @@ void setupHTTP() {
  * @see onDisconnected()
  */
 
-void onConnected() {
+void onConnected()
+{
     Serial.println("Connected to MQTT Server.");
 
     // Set Info Display.
@@ -193,7 +196,8 @@ void onConnected() {
  * @param length The length of the payload in bytes.
  */
 
-void onMessage(const char *topic, const uint8_t *payload, uint16_t length) {
+void onMessage(const char* topic, const uint8_t* payload, uint16_t length)
+{
     Serial.println("Received ");
     Serial.print(topic);
     Serial.println(" - ");
@@ -220,7 +224,8 @@ void onMessage(const char *topic, const uint8_t *payload, uint16_t length) {
  * @return void
  */
 
-void setupMQTT() {
+void setupMQTT()
+{
     // Add MQTT Listener.
     mqtt.onMessage(onMessage);
     mqtt.onConnected(onConnected);
@@ -256,7 +261,8 @@ void setupMQTT() {
  * @see handleEvent() for handling specific events in the Home Automation system.
  */
 
-void setupHA() {
+void setupHA()
+{
     // Set ID of Device.
     device.setUniqueId(macIO, sizeof(macIO));
 
@@ -320,6 +326,10 @@ void setupHA() {
     // Prepare Moist Switch.
     moistSwitch.setName("Rohrbruch");
     moistSwitch.setCurrentState(false);
+
+    ignoreSwitch.setName("I. Moist");
+    ignoreSwitch.setRetain(true);
+    ignoreSwitch.onCommand(MQTT::onIgnore);
 
     // Prepare Mix 1
     mix1.setName("Misch. Brunnen / Zisterne");
@@ -399,7 +409,8 @@ void setupHA() {
  *
  * @return void
  */
-void setupOTA() {
+void setupOTA()
+{
     // Begin OTA Server with Internal Storage.
     ElegantOTA.begin(&server);
 
@@ -433,7 +444,8 @@ void setupOTA() {
  *
  */
 
-void loop() {
+void loop()
+{
     // Handle MQTT Stream.
     mqtt.loop();
 
@@ -444,7 +456,8 @@ void loop() {
     Slave::loop();
 
     // Check if Timer is endend.
-    if (updateIO.isReady()) {
+    if (updateIO.isReady())
+    {
         // Set Power Usage.
         power.setValue(Watcher::getPower());
 
@@ -468,8 +481,8 @@ void loop() {
     }
 
     // Check Ethernet Connection.
-    if (!ETH.linkUp()) {
+    if (!ETH.linkUp())
+    {
         Slave::setError(true, "Loosed Connection with Ethernet", false, "ETHERNET [X]");
     }
 }
-

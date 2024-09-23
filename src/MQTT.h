@@ -29,6 +29,8 @@ public:
     static void onRatio(HANumeric number, HANumber* sender);
 
     static void onBuzzer(HAButton *);
+
+    static void onIgnore(bool state, HASwitch* sender);
 };
 
 
