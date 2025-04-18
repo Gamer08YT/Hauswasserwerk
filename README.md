@@ -136,12 +136,14 @@ Note 3: IO39, IO35 and IO36, only supports input.
 
 ### Via ByteDebugger 6P GX16
 
-1 = RX0
-2 = TX0
-3 = IO0
-4 = 5V
-5 = X
-6 = GND
+| Stecker PIN | ESP32 PIN |
+|-------------|-----------|
+| 1           | RX0       |
+| 2           | TX0       |
+| 3           | IO0       |
+| 4           | 5V        |
+| 5           | X         |
+| 6           | GND       |
 
 ### Remove Sensor Data:
 
