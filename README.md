@@ -39,6 +39,9 @@ graph TD
     Netzwerk <--> Shelly2(Shelly)
     Shelly1 --> Pumpe1(Tauchpumpe)
     Shelly2 --> Pumpe2(Tauchpumpe)
+    Shelly2 <--> Addon2(Analog Addon)
+    Addon2 <--> TL13612(TL136)
+    Addon2 <--> Pegelschalter1(Pegelschalter)
     Shelly1 <--> Addon(Analog Addon)
     Addon <--> TL1361(TL136)
     Addon <--> Pegelschalter2(Pegelschalter)
@@ -50,6 +53,7 @@ graph TD
     Sensoren --> TL136(TL136)
     Sensoren <--> Pegelschalter
     Sensoren <--> Wassermelder
+    Sensoren <--> Power(Power Meter)
 ```
 
 ## Abläufe:
