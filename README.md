@@ -12,6 +12,10 @@ Die Master-Einheit besteht aus einem WT32-ETH01 (ESP32 with Ethernet Jack).
 Die Konfigurationen werden jeweils auf den Geräten Lokal gespeichert, eine Steuerung wird über HomeAssistant
 bereitgestellt.
 
+## ⚠️ Haftungsausschluss
+
+Die Nutzung dieser Software und der zugehörigen Hardware-Implementierung erfolgt auf eigene Gefahr. WARNUNG: Arbeiten an elektrischen Anlagen können lebensgefährlich sein! Der Autor übernimmt keine Haftung für Personen-, Sach- oder Vermögensschäden, die durch die Nutzung dieser Software oder der damit verbundenen Informationen entstehen. Jeder Anwender ist für die sichere Installation und den ordnungsgemäßen Betrieb selbst verantwortlich. Sämtliche Arbeiten dürfen nur von qualifizierten Fachkräften unter Beachtung aller geltenden Vorschriften durchgeführt werden.
+
 ## Todos:
 
 STOP CHECKING SHELLY EVERY 15 SECONDS...
