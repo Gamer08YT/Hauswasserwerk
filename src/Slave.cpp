@@ -56,9 +56,8 @@ bool states[] = {
     false
 };
 
-String display_updates[] = {
-
-};
+constexpr size_t kDisplayLineCount = 4;
+String display_updates[kDisplayLineCount];
 
 // https://rickkas7.github.io/DisplayGenerator/index.html
 const unsigned char logo[] PROGMEM = {
@@ -488,7 +487,10 @@ void Slave::infoDisplay(const char* titleIO, String contentIO, bool forceIO)
             display_title = titleIO;
 
             // Reset Updates Array.
-            std::fill_n(display_updates, sizeof(display_updates), 0);
+            for (String &lineIO : display_updates)
+            {
+                lineIO = "";
+            }
             Wire.flush();
         }
     }
@@ -511,7 +513,14 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO)
 {
     if (display_state && (!display_button || forceIO))
     {
-        if (display_updates[yIO - xIO] != contentIO)
+        const int lineIndexIO = yIO / 16;
+
+        if (lineIndexIO < 0 || lineIndexIO >= static_cast<int>(kDisplayLineCount))
+        {
+            return;
+        }
+
+        if (display_updates[lineIndexIO] != contentIO)
         {
             // Override Line.
             oled_display.fillRect(xIO, yIO, 128, 14, BLACK);
@@ -522,7 +531,7 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO)
             oled_display.printlnUTF8(const_cast<char*>(contentIO.c_str()));
 
             oled_display.display();
-            display_updates[yIO - xIO] = contentIO;
+            display_updates[lineIndexIO] = contentIO;
             Wire.flush();
         }
     }

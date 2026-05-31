@@ -8,25 +8,23 @@
 #include "PINOUT.h"
 #include "EmonLib.h"
 #include "Slave.h"
-#include "Device.h"
 
 
-TaskHandle_t measurements_task;
 namespace
 {
-constexpr uint32_t kWatcherLoopIntervalMs = 1000;
+    constexpr uint32_t kWatcherLoopIntervalMs = 1000;
 
-bool intervalElapsed(uint32_t &lastTickIO, uint32_t intervalIO)
-{
-    const uint32_t nowIO = millis();
-    if (nowIO - lastTickIO >= intervalIO)
+    bool intervalElapsed(uint32_t& lastTickIO, uint32_t intervalIO)
     {
-        lastTickIO = nowIO;
-        return true;
-    }
+        const uint32_t nowIO = millis();
+        if (nowIO - lastTickIO >= intervalIO)
+        {
+            lastTickIO = nowIO;
+            return true;
+        }
 
-    return false;
-}
+        return false;
+    }
 } // namespace
 
 // Tick for Measuring Updates.

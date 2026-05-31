@@ -154,9 +154,9 @@ void setup()
     // Setup MQTT.
     setupMQTT();
 
-    // Add Panic Watchdoc (2-Second Timeout).
+    // Add Panic Watchdoc (5-Second Timeout).
     esp_task_wdt_config_t twdt_config = {
-        .timeout_ms = 2000,
+        .timeout_ms = 5000,
         .idle_core_mask = 0,
         .trigger_panic = true
     };
