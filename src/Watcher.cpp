@@ -370,7 +370,10 @@ void Watcher::readCurrent()
     }
 
     // Calculate the Distance (mV to V).
-    distanceIO = ((averageIO / 5) / 1000.0);
+    const average = ((averageIO / 5) / 1000.0);
+
+    // Do some EMA Filtering.
+    float voltage = (latestVoltage * (1.0f - EMA_ALPHA)) + (average * EMA_ALPHA);
 
     // Calculate Range.
     double rangeIO = voltage_max - voltage_min;

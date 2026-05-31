@@ -102,6 +102,10 @@ void setupHTTP();
  */
 void setup()
 {
+    // Add Panic Watchdoc (2-Second Timeout).
+    esp_task_wdt_init(2, true);
+    esp_task_wdt_add(NULL);
+
     // Begin Serial Console.
     Serial.begin(115200);
 
@@ -479,4 +483,7 @@ void loop()
     {
         Slave::setError(true, "Loosed Connection with Ethernet", false, "ETHERNET [X]");
     }
+
+    // Reset Watchdoc Timer.
+    esp_task_wdt_reset();
 }

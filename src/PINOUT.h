@@ -19,4 +19,12 @@
 #define MIN_SLAVE_POWER 200
 #define MAX_SLAVE_DISABLED 5
 
+/**
+ * Define EMA Filtering
+ * 0.05 very good, very slow => 5% from new Value
+ * 0.30 ok, ok => 30% from new Value
+ * 0.50 very bad, very fast => 50% from new Value
+ */
+#define EMA_ALPHA 0.3
+
 #endif //HAUSWASSERWERK_PINOUT_H

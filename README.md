@@ -145,8 +145,8 @@ Note 3: IO39, IO35 and IO36, only supports input.
 | 1           | RX0       |
 | 2           | TX0       |
 | 3           | IO0       |
-| 4           | 5V        |
-| 5           | X         |
+| 4           | EN        |
+| 5           | 5V        |
 | 6           | GND       |
 
 ### Remove Sensor Data:
