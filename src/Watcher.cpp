@@ -35,6 +35,8 @@ float irmsIO = 0;
 float distanceIO = 0;
 int percentIO = 0;
 
+bool distanceInitializedIO = false;
+
 float voltage_max = 1.90;
 float voltage_min = 0.90;
 
@@ -74,6 +76,12 @@ bool Watcher::getLevelSwitch()
 
 void Watcher::setup()
 {
+    // Set Resolution to 12 Bit.
+    analogReadResolution(12);
+
+    // Set ADC Attenuation.
+    analogSetAttenuation(ADC_11db);
+
     pinMode(LEVEL_SWITCH, INPUT);
     pinMode(LEVEL_FILL, INPUT);
     pinMode(METER, INPUT);
@@ -185,10 +193,10 @@ void Watcher::handleConditions()
 
 void Watcher::loop()
 {
-    // Read Ultrasonic Sensor.
+    // Read TL136 Sensor.
     if (timerIO.isReady())
     {
-        // Read Ultrasonic Sensor.
+        // Read TL136 Sensor.
         readCurrent();
 
         // Handle Conditions.
@@ -373,7 +381,15 @@ void Watcher::readCurrent()
     const float average = ((averageIO / 5) / 1000.0f);
 
     // Do some EMA Filtering.
-    distanceIO = (distanceIO * (1.0f - EMA_ALPHA)) + (average * EMA_ALPHA);
+    if (!distanceInitializedIO)
+    {
+        distanceIO = average;
+        distanceInitializedIO = true;
+    }
+    else
+    {
+        distanceIO = (distanceIO * (1.0f - EMA_ALPHA)) + (average * EMA_ALPHA);
+    }
 
     // Calculate Range.
     double rangeIO = voltage_max - voltage_min;
