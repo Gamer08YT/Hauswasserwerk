@@ -6,15 +6,31 @@
 #include <Arduino.h>
 #include "Watcher.h"
 #include "PINOUT.h"
-#include "SimpleTimer.h"
 #include "EmonLib.h"
 #include "Slave.h"
 #include "Device.h"
 
 
 TaskHandle_t measurements_task;
-// Timer for Measuring Updates.
-SimpleTimer timerIO(1000);
+namespace
+{
+constexpr uint32_t kWatcherLoopIntervalMs = 1000;
+
+bool intervalElapsed(uint32_t &lastTickIO, uint32_t intervalIO)
+{
+    const uint32_t nowIO = millis();
+    if (nowIO - lastTickIO >= intervalIO)
+    {
+        lastTickIO = nowIO;
+        return true;
+    }
+
+    return false;
+}
+} // namespace
+
+// Tick for Measuring Updates.
+static uint32_t watcherLoopTickIO = 0;
 
 // Store Energy Monitor Instance.
 EnergyMonitor monitor;
@@ -194,7 +210,7 @@ void Watcher::handleConditions()
 void Watcher::loop()
 {
     // Read TL136 Sensor.
-    if (timerIO.isReady())
+    if (intervalElapsed(watcherLoopTickIO, kWatcherLoopIntervalMs))
     {
         // Read TL136 Sensor.
         readCurrent();
@@ -204,9 +220,6 @@ void Watcher::loop()
 
         // Handle Measurements.
         handleMeasurement();
-
-        // Reset Timer (Endless Loop).
-        timerIO.reset();
     }
 }
 

@@ -8,7 +8,6 @@
 #include "Watcher.h"
 #include "LanNetwork.h"
 #include "Slave.h"
-#include "SimpleTimer.h"
 
 // Store MAC Address of Device.
 byte macIO[] = {
@@ -18,8 +17,24 @@ byte macIO[] = {
 // Store PCB Software Version.
 const char* versionIO = "1.1.7";
 
-// Timer for HA Updates.
-SimpleTimer updateIO(1500);
+namespace
+{
+constexpr uint32_t kUpdateIntervalMs = 1500;
+
+uint32_t updateTickIO = 0;
+
+bool intervalElapsed(uint32_t &lastTickIO, uint32_t intervalIO)
+{
+    const uint32_t nowIO = millis();
+    if (nowIO - lastTickIO >= intervalIO)
+    {
+        lastTickIO = nowIO;
+        return true;
+    }
+
+    return false;
+}
+} // namespace
 
 // Define Home Assistant Credentials.
 HADevice device;
@@ -443,7 +458,7 @@ void loop()
     Slave::loop();
 
     // Check if Timer is endend.
-    if (updateIO.isReady())
+    if (intervalElapsed(updateTickIO, kUpdateIntervalMs))
     {
         // Set Power Usage.
         power.setValue(Watcher::getPower());
@@ -462,9 +477,6 @@ void loop()
         // Read Values of Digital Inputs.
         maxSwitch.setCurrentState(Watcher::getLevelSwitch());
         moistSwitch.setCurrentState(!Watcher::readLevelAlarm());
-
-        // Reset Timer State.
-        updateIO.reset();
     }
 
     // Check Ethernet Connection.

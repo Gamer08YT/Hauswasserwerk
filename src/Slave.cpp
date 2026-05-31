@@ -9,7 +9,6 @@
 #include "PINOUT.h"
 #include "Device.h"
 #include "Adafruit_SSD1306.h"
-#include "SimpleTimer.h"
 
 // Store Error Lock.
 bool lockIO = false;
@@ -23,17 +22,28 @@ String display_message, display_title = "";
 bool display_state = true;
 bool display_button = false;
 
-// Timer for DIM OLED:
-SimpleTimer dimIO(5000);
+namespace
+{
+constexpr uint32_t kDimIntervalMs = 5000;
+constexpr uint32_t kNtpUpdateIntervalMs = 30000;
+constexpr uint32_t kDisableIntervalMs = 60000;
 
-// Timer for NTP Update.
-SimpleTimer ntpupdateIO(30000);
+uint32_t dimTickIO = 0;
+uint32_t ntpUpdateTickIO = 0;
+uint32_t disableTickIO = 0;
 
-// Timer for disabling OLED.
-SimpleTimer disableIO(60000);
+bool intervalElapsed(uint32_t &lastTickIO, uint32_t intervalIO)
+{
+    const uint32_t nowIO = millis();
+    if (nowIO - lastTickIO >= intervalIO)
+    {
+        lastTickIO = nowIO;
+        return true;
+    }
 
-// Handle Shelly Check Timer.
-SimpleTimer shellyupdate(15000);
+    return false;
+}
+} // namespace
 
 // Store OLED Instance.
 Adafruit_SSD1306 oled_display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
@@ -535,14 +545,14 @@ void Slave::updateLine(String contentIO, int xIO, int yIO, bool forceIO)
 void Slave::loop()
 {
     // Dim Display if Time is exceeded.
-    if (dimIO.isReady())
+    if (intervalElapsed(dimTickIO, kDimIntervalMs))
     {
         setContrast(8);
         oled_display.display();
     }
 
     // Disable OLED.
-    if (disableIO.isReady())
+    if (intervalElapsed(disableTickIO, kDisableIntervalMs))
     {
         display_state = false;
         //oled_display.clearDisplay();
@@ -571,11 +581,9 @@ void Slave::loop()
         //updateLine(ETH.localIP().toString(), 0, 32, true);
     }
 
-    if (ntpupdateIO.isReady())
+    if (intervalElapsed(ntpUpdateTickIO, kNtpUpdateIntervalMs))
     {
         //updateLine(NTP.getTimeStr(), 0, 48, false);
-
-        ntpupdateIO.reset();
     }
 }
 
@@ -619,8 +627,9 @@ void Slave::setContrast(int valueIO)
  */
 void Slave::setDisplayActive()
 {
-    dimIO.reset();
-    disableIO.reset();
+    const uint32_t nowIO = millis();
+    dimTickIO = nowIO;
+    disableTickIO = nowIO;
     display_state = true;
     oled_display.ssd1306_command(SSD1306_DISPLAYON);
     setContrast(128);
