@@ -457,7 +457,7 @@ void loop()
     // Handle Slave Loop.
     Slave::loop();
 
-    // Check if Timer is endend.
+    // Check if update interval elapsed.
     if (intervalElapsed(updateTickIO, kUpdateIntervalMs))
     {
         // Set Power Usage.

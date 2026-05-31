@@ -559,14 +559,11 @@ void Slave::loop()
         oled_display.ssd1306_command(SSD1306_DISPLAYOFF);
     }
 
-    // Check if Pump is realy Active.
+    // Check if Pump is really active.
     /* @todo: Nur zum Test wegen Crashes.
-    if (shellyupdate.isReady()) {
-        checkSlaveState(0);
-        checkSlaveState(1);
-
-        shellyupdate.reset();
-    }*/
+    checkSlaveState(0);
+    checkSlaveState(1);
+    */
 
     // Read Unlock Button.
     display_button = !digitalRead(UNLOCK_BUTTON);
@@ -623,7 +620,7 @@ void Slave::setContrast(int valueIO)
 /**
  * @brief Sets the display active.
  *
- * This function resets the dimIO and disableIO timers, sets the display_state to true, and configures the display.
+ * This function refreshes the display timeouts, sets the display_state to true, and configures the display.
  */
 void Slave::setDisplayActive()
 {
