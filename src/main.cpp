@@ -133,6 +133,27 @@ void setup()
     // Update Fill Level.
     Slave::updateLine(versionIO, 0, 32);
 
+    // Add Panic Watchdoc (5-Second Timeout).
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = 5000,
+        .idle_core_mask = 0,
+        .trigger_panic = true
+    };
+    esp_err_t wdtResultIO = esp_task_wdt_init(&twdt_config);
+
+    if (wdtResultIO != ESP_OK && wdtResultIO != ESP_ERR_INVALID_STATE)
+    {
+        Serial.print("TWDT init failed: ");
+        Serial.println((int)wdtResultIO);
+    }
+
+    wdtResultIO = esp_task_wdt_add(NULL);
+    if (wdtResultIO != ESP_OK && wdtResultIO != ESP_ERR_INVALID_STATE)
+    {
+        Serial.print("TWDT add failed: ");
+        Serial.println((int)wdtResultIO);
+    }
+
     // Setup LAN Connection.
     LanNetwork::setupLAN();
 
@@ -154,14 +175,6 @@ void setup()
     // Setup MQTT.
     setupMQTT();
 
-    // Add Panic Watchdoc (5-Second Timeout).
-    esp_task_wdt_config_t twdt_config = {
-        .timeout_ms = 5000,
-        .idle_core_mask = 0,
-        .trigger_panic = true
-    };
-    esp_task_wdt_init(&twdt_config);
-    esp_task_wdt_add(NULL);
 }
 
 /**
