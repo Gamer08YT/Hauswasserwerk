@@ -1,19 +1,14 @@
-#define ARDUINOHA_DEBUG
-
 #include <Arduino.h>
+#include <esp_task_wdt.h>
 #include <ArduinoHA.h>
 #include <MQTT.h>
-#include <ESPAsyncWebServer.h>
-#include <ElegantOTA.h>
+#include <ArduinoOTA.h>
 #include <ETH.h>
+#include <NetworkClient.h>
 #include "Watcher.h"
-#include "Network.h"
-#include "Device.h"
+#include "LanNetwork.h"
 #include "Slave.h"
 #include "SimpleTimer.h"
-
-//#include "ArduinoOTA.h"
-//#include "InternalStorage.h"
 
 // Store MAC Address of Device.
 byte macIO[] = {
@@ -23,16 +18,13 @@ byte macIO[] = {
 // Store PCB Software Version.
 const char* versionIO = "1.1.7";
 
-// Store WebServer Instance.
-AsyncWebServer server(80);
-
 // Timer for HA Updates.
 SimpleTimer updateIO(1500);
 
 // Define Home Assistant Credentials.
 HADevice device;
 
-WiFiClient client;
+NetworkClient client;
 
 // Define Home Assistant MQTT Instance.
 HAMqtt mqtt(client, device, 16);
@@ -80,8 +72,6 @@ void setupHA();
 
 void setupMQTT();
 
-void setupHTTP();
-
 /**
  * @brief Initializes the variables and resources required for the setup.
  *
@@ -102,10 +92,6 @@ void setupHTTP();
  */
 void setup()
 {
-    // Add Panic Watchdoc (2-Second Timeout).
-    esp_task_wdt_init(2, true);
-    esp_task_wdt_add(NULL);
-
     // Begin Serial Console.
     Serial.begin(115200);
 
@@ -120,7 +106,7 @@ void setup()
 
     // Create new Slave Object.
 
-    // Display Bootscreen.
+    // Display Boot screen.
     Slave::showBootscreen();
 
     // Print Debug Message.
@@ -133,13 +119,10 @@ void setup()
     Slave::updateLine(versionIO, 0, 32);
 
     // Setup LAN Connection.
-    Network::setupLAN();
+    LanNetwork::setupLAN();
 
     // Setup Arduino OTA.
     setupOTA();
-
-    // Setup HTTP Server.
-    setupHTTP();
 
     // Setup NTP.
     // Slave::ntp();
@@ -155,12 +138,15 @@ void setup()
 
     // Setup MQTT.
     setupMQTT();
-}
 
-void setupHTTP()
-{
-    // Begin WebServer.
-    server.begin();
+    // Add Panic Watchdoc (2-Second Timeout).
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = 2000,
+        .idle_core_mask = 0,
+        .trigger_panic = true
+    };
+    esp_task_wdt_init(&twdt_config);
+    esp_task_wdt_add(NULL);
 }
 
 /**
@@ -409,8 +395,8 @@ void setupHA()
  */
 void setupOTA()
 {
-    // Begin OTA Server with Internal Storage.
-    ElegantOTA.begin(&server);
+    ArduinoOTA.setHostname("hauswasserwerk");
+    ArduinoOTA.begin();
 
     // Set Display Message.
     Slave::infoDisplay("OTA", "ONLINE");
@@ -444,6 +430,9 @@ void setupOTA()
 
 void loop()
 {
+    // Handle OTA Updates.
+    ArduinoOTA.handle();
+
     // Handle MQTT Stream.
     mqtt.loop();
 

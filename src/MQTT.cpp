@@ -13,21 +13,21 @@ void MQTT::onNormal(HANumeric numberIO, HANumber* sender)
 {
     Watcher::setNormal(numberIO.toInt8());
 
-    sender->setState(Watcher::getNormal());
+    sender->setState(static_cast<int32_t>(Watcher::getNormal()));
 }
 
 void MQTT::onMax(HANumeric numberIO, HANumber* sender)
 {
     Watcher::setMax(numberIO.toInt8());
 
-    sender->setState(Watcher::getMax());
+    sender->setState(static_cast<int32_t>(Watcher::getMax()));
 }
 
 void MQTT::onMin(HANumeric numberIO, HANumber* sender)
 {
     Watcher::setMin(numberIO.toInt8());
 
-    sender->setState(Watcher::getMin());
+    sender->setState(static_cast<int32_t>(Watcher::getMin()));
 }
 
 void MQTT::minV(HANumeric numberIO, HANumber* senderIO)
